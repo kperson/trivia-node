@@ -9,6 +9,7 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript"> 
 			$(document).ready(function() {
+				var socket = io.connect('http://localhost:8080');
 				
 				var ApplicationRouter = Backbone.Router.extend({
 
@@ -80,6 +81,8 @@
 				$('#kelton').bind('click', function(e) {
 					e.preventDefault();
 					view.displayPost();
+					var name = $(this).attr('data-name');
+					socket.emit('kelton', {'name' : name});
 				});
 			});
 		</script>
@@ -91,6 +94,6 @@
 		<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
 		<p><button>Submit</button>
 		</form>
-		<a href="#" id="kelton">Click Me</a>
+		<a href="#" id="kelton" data-name="kperson">Click Me</a>
 	</body>
 </html>

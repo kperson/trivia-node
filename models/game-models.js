@@ -191,6 +191,17 @@ function makeModels(Schema, mongoose) {
 	models['session'] = sessionSchema;
 	/* End Session */	
 	
+	/* Begin User */
+	User = new Schema({
+		userId : { type : String, index : { unique : false } },
+		nickname : String, 
+		createdAt : {  type : Date, default : Date.now }
+	});
+	
+	var userSchema = mongoose.model('trivia_user', User);
+	models['user'] = userSchema;
+	/* End User */	
+
 	return models;
 }
 

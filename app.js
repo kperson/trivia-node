@@ -9,12 +9,25 @@ var Message = models['message'];
 var Trivia = models['trivia'];
 var TriviaSession = models['trivia_session'];
 var Session = models['session'];
+var User = models['user'];
 
 var app = require('http').createServer(handler)
 	,io = require('socket.io').listen(app)
 	,fs = require('fs')
 
 app.listen(config.port);	
+
+/*
+Trivia.find({ _id : mongoose.Types.ObjectId('512ec2aea37dd4f002000006'),triviaName : 'T1' }).exec(function(err,trivias) {
+	if(!err) {
+		for(var i = 0; i < trivias.length; i++) {
+			console.log(trivias[i].questions);
+		}
+	}	
+	else
+		console.log('err');
+});
+*/
 	
 if(config.allowedSockets.length != 0){
 	io.set('origins', config.allowedSockets.join(', '));
@@ -37,3 +50,9 @@ function handler (req, res) {
 		res.end(data);
   });
 }
+
+io.sockets.on('connection',function(socket) {
+	socket.on('kelton',function(data) {
+		console.log(data.name);
+	});
+});
