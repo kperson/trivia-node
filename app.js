@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 var schema = mongoose.Schema;
 mongoose.connect(config.mongoConnection);
 
-var models = require('./models/game-models.js').make(schema, mongoose);
+var models = require('./models/game-models.js').makeModels(schema, mongoose);
 var Message = models['message'];
 var Trivia = models['trivia'];
 var TriviaSession = models['trivia_session'];
@@ -14,6 +14,8 @@ var app = require('http').createServer(handler)
 	,io = require('socket.io').listen(app)
 	,fs = require('fs')
 
+app.listen(config.port);	
+	
 if(config.allowedSockets.length != 0){
 	io.set('origins', config.allowedSockets.join(', '));
 }  
