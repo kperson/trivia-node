@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+	<meta charset="utf-8">
+	<title>Trivia</title>
+	<head>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+		<script src="/assets/js/underscore-min.js"></script>
+		<script src="/assets/js/backbone-min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript"> 
+			$(document).ready(function() {
+				
+				var ApplicationRouter = Backbone.Router.extend({
+
+				  //map url routes to contained methods
+				  routes: {
+					  "": "home",
+					  "home": "home",
+					  "post/:id/": "post",
+					  "contact": "contact"
+				  },
+
+				  home: function() {
+					  //this.showPage('div#home-page');
+				  },
+
+				  post: function(postId) {
+						console.log(parseInt(postId));
+					  //this.showPage('div#about-page');
+				  },
+
+				  contact: function() {
+					  //this.showPage('div#contact-page');
+				  }
+
+				});		
+
+				
+				var ApplicationView = Backbone.View.extend({
+
+				  //bind view to body element (all views should be bound to DOM elements)
+
+				  //observe navigation click events and map to contained methods
+				  events: {
+
+				  },
+
+				  //called on instantiation
+				  initialize: function(){
+					  //set dependency on ApplicationRouter
+					  this.router = new ApplicationRouter();
+					  //call to begin monitoring uri and route changes
+					  Backbone.history.start({pushState: true});
+				  },
+
+				  displayHome: function(){
+					  //update url and pass true to execute route method
+					  this.router.navigate("home", true);
+				  },
+
+				  displayAbout: function(){
+					  //update url and pass true to execute route method
+					  this.router.navigate("about", true);
+				  },
+
+				  displayContact: function(){
+					  //update url and pass true to execute route method
+					  this.router.navigate("contact", true);
+				  },
+				  
+				  displayPost: function(){
+					  //update url and pass true to execute route method
+					  this.router.navigate("post/123456/", true);
+				  }				  
+
+				});
+
+				var view = new ApplicationView();
+				
+				$('#kelton').bind('click', function(e) {
+					e.preventDefault();
+					view.displayPost();
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<p id="status">&nbsp;</p>
+		<form method="post" action="#" id="form">
+		<p id="question"></p>
+		<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
+		<p><button>Submit</button>
+		</form>
+		<a href="#" id="kelton">Click Me</a>
+	</body>
+</html>
