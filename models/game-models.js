@@ -135,9 +135,9 @@ function makeModels(Schema, mongoose) {
 		this.save(callback);
 	};
 	
-	Message.methods.markAsSent = function() {
+	Message.methods.markAsSent = function(callback) {
 		this.status = 'sent';
-		this.save();
+		this.save(callback);
 	};
 	
 	Message.methods.normalize = function(){
@@ -194,4 +194,4 @@ function makeModels(Schema, mongoose) {
 	return models;
 }
 
-module.exports.make = makeModels;
+module.exports.makeModels = makeModels;
