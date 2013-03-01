@@ -123,7 +123,7 @@
 								o[n.name] = $(n).val();
 								return o;
 						});
-						socket.emit('createTrivia', form);
+						socket.emit('createTrivia', form[0]);
 					});
 				};	
 
