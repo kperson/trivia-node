@@ -19,8 +19,8 @@
 					$.cookie('registerClient', id, { expires: 7, path: '/' });
 				});
 
-				socket.on('onTriviaCreated',function(triviaId) {
-					console.log(triviaId);
+				socket.on('onTriviaCreated',function(resp) {
+					view.displayTriviaEdit(resp.triviaId);
 				});
 
 				var ApplicationRouter = Backbone.Router.extend({
@@ -29,8 +29,8 @@
 				  routes: {
 					  "": "home",
 					  "home/": "home",
-					  "trivia/:id/edit": "editTrivia",
-					  "trivia/add": "createTrivia",
+					  "trivia/:id/edit/": "editTrivia",
+					  "trivia/add/": "createTrivia",
 						"post/:id/": "post",
 					  "contact": "contact"
 				  },
@@ -98,6 +98,11 @@
 				  displayAbout: function(){
 					  //update url and pass true to execute route method
 					  this.router.navigate("about", true);
+				  },
+
+				  displayTriviaEdit: function(id){
+					  //update url and pass true to execute route method
+					  this.router.navigate("trivia/" + id + "/edit/", true);
 				  },
 
 				  displayContact: function(){
