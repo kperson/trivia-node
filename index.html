@@ -13,7 +13,7 @@
 			$(document).ready(function() {
 				var socket = io.connect('http://localhost:8080');
 				socket.on('request',function() {
-					var id = Math.rand();
+					var id = Math.random().toString(36).substr(2,16);
 					socket.emit('registerClient',{'id' : id});
 					$.cookie('registerClient', id, { expires: 7, path: '/' });
 				});
@@ -123,7 +123,7 @@
 								o[n.name] = $(n).val();
 								return o;
 						});
-						socket.emit('postTriviaGame', form);
+						socket.emit('createTrivia', form);
 					});
 				};	
 
