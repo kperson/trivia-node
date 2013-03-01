@@ -12,10 +12,15 @@
 		<script type="text/javascript"> 
 			$(document).ready(function() {
 				var socket = io.connect('http://localhost:8080');
+
 				socket.on('request',function() {
 					var id = Math.random().toString(36).substr(2,16);
 					socket.emit('registerClient',{'id' : id});
 					$.cookie('registerClient', id, { expires: 7, path: '/' });
+				});
+
+				socket.on('onTriviaCreated',function(triviaId) {
+					console.log(triviaId);
 				});
 
 				var ApplicationRouter = Backbone.Router.extend({
@@ -24,7 +29,8 @@
 				  routes: {
 					  "": "home",
 					  "home/": "home",
-					  "create-game/": "createTrivia",
+					  "trivia/:id/edit": "editTrivia",
+					  "trivia/add": "createTrivia",
 						"post/:id/": "post",
 					  "contact": "contact"
 				  },
@@ -52,6 +58,9 @@
 							bindTriviaGame();
 						});
 				  },
+
+				  editTrivia: function(triviaId) {
+					},
 
 				  updateTrivia: function(triviaId) {
 						console.log('game');
@@ -112,22 +121,12 @@
 					socket.emit('kelton', {'name' : name});
 				});
 
-				
 				var bindTriviaGame = function() {
 				
 					$('#trivia-game').bind('submit', function(e) {
 						e.preventDefault();
-						var inputs = $('#trivia-game input');
-						var form = $.map(inputs, function(n, i)
-						{
-								var o = {};
-								o[n.name] = $(n).val();
-								return o;
-						});
-						socket.emit('createTrivia', form[0]);
 						var form = {};
 						form.triviaName = $('input[name="triviaName"]',this).val();	
-						console.log('hello');
 						socket.emit('createTrivia', form);
 					});
 				};	
