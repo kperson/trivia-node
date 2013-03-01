@@ -7,17 +7,25 @@
 		<script src="/assets/js/underscore-min.js"></script>
 		<script src="/assets/js/backbone-min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
+		<script src="/assets/js/mustache.js"></script>
+		<script src="/assets/js/jquery.cookie.js"></script>
 		<script type="text/javascript"> 
 			$(document).ready(function() {
 				var socket = io.connect('http://localhost:8080');
-				
+				socket.on('request',function() {
+					var id = Math.rand();
+					socket.emit('registerClient',{'id' : id});
+					$.cookie('registerClient', id, { expires: 7, path: '/' });
+				});
+
 				var ApplicationRouter = Backbone.Router.extend({
 
 				  //map url routes to contained methods
 				  routes: {
 					  "": "home",
-					  "home": "home",
-					  "post/:id/": "post",
+					  "home/": "home",
+					  "create-game/": "createTrivia",
+						"post/:id/": "post",
 					  "contact": "contact"
 				  },
 
@@ -28,6 +36,25 @@
 				  post: function(postId) {
 						console.log(parseInt(postId));
 					  //this.showPage('div#about-page');
+				  },
+
+				  createTrivia: function() {
+						$.get('/assets/templates/trivia.html',function(resp) {
+							if(!$('#contentTrivia').length) {
+								var content = Mustache.render(resp,{'action' : 'add'});
+								$('.contentBlock').hide();
+								$('#contentView').append(content);
+							}	
+							else {
+								$('.contentBlock').hide();
+								$('#contentTrivia').show();
+							}
+							bindTriviaGame();
+						});
+				  },
+
+				  updateTrivia: function(triviaId) {
+						console.log('game');
 				  },
 
 				  contact: function() {
@@ -84,16 +111,36 @@
 					var name = $(this).attr('data-name');
 					socket.emit('kelton', {'name' : name});
 				});
+
+				
+				var bindTriviaGame = function() {
+					$('#trivia-game').bind('submit', function(e) {
+						e.preventDefault();
+						var inputs = $('#trivia-game input');
+						var form = $.map(inputs, function(n, i)
+						{
+								var o = {};
+								o[n.name] = $(n).val();
+								return o;
+						});
+						socket.emit('postTriviaGame', form);
+					});
+				};	
+
 			});
 		</script>
 	</head>
 	<body>
-		<p id="status">&nbsp;</p>
-		<form method="post" action="#" id="form">
-		<p id="question"></p>
-		<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
-		<p><button>Submit</button>
-		</form>
-		<a href="#" id="kelton" data-name="kperson">Click Me</a>
+		<div id="contentView">
+			<div id="main" class="contentBlock">
+				<p id="status">&nbsp;</p>
+				<form method="post" action="#" id="form">
+				<p id="question"></p>
+				<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
+				<p><button>Submit</button>
+				</form>
+				<a href="#" id="kelton" data-name="kperson">Click Me</a>
+			</div>	
+		</div>	
 	</body>
 </html>
