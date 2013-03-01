@@ -11,6 +11,8 @@ var TriviaSession = models['trivia_session'];
 var Session = models['session'];
 var User = models['user'];
 
+var clientInfo = { };
+
 var app = require('http').createServer(handler)
 	,io = require('socket.io').listen(app)
 	,fs = require('fs')
@@ -52,7 +54,27 @@ function handler (req, res) {
 }
 
 io.sockets.on('connection',function(socket) {
-	socket.on('kelton',function(data) {
-		console.log(data.name);
+	
+	clientInfo[socket.id] =  { };
+	
+	socket.emit('request', {});
+	
+	socket.on('registerClient', function(data) {
+		var sessionId =  data.id;
+		clientInfo[socket.id].sessionId = data.id;
 	});
+	
+	
+	
+	
+	
+	socket.on('createTrivia', function(data){
+		var name = data.triviaName;
+		var triviaName = Trivia({triviaName : name });
+	});
+	
+	socket.on('register', function(data){
+		var name = data.cookie;
+	});
+	
 });

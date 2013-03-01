@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+	<meta charset="utf-8">
+	<title>Trivia</title>
+	<head>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript"> 
+			$(document).ready(function() {
+				var socket = io.connect('http://localhost:8080');
+				var currQuestion;
+				socket.on('question', function (question) {
+					currQuestion = question;
+					$('#question').html('Question: ' + currQuestion['question']);
+					$('#answer').val('');
+					$('#status').html(currQuestion['timeLimit'] + ' seconds to answer');
+					$('#answer').focus();
+					
+				});
+				
+				socket.on('correct', function (data) {
+					$('#status').html('Correct!');
+				});
+				
+				socket.on('incorrect', function (data) {
+					currQuestion = question;
+					$('#status').html('Incorrect, the answer was ' + data['answer']);
+				});
+
+				socket.on('over', function (summary) {
+					$('#status').html('Game over, score : ' + summary['correct'] + '/' + summary['total']);
+				});				
+				
+				$('#form').bind('submit', function(e){
+					e.preventDefault();
+					var answer = $.trim($('#answer').val());
+					socket.emit('answer', { value : answer, index : currQuestion['index'] });
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<p id="status">&nbsp;</p>
+		<form method="post" action="#" id="form">
+		<p id="question"></p>
+		<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
+		<p><button>Submit</button>
+		</form>
+	</body>
+</html>
