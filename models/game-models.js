@@ -4,6 +4,7 @@ function makeModels(Schema, mongoose) {
 	/* Begin Trivia*/
 	Trivia = new Schema({
 		triviaName : String,
+		sessionId : String,
 		questions : [
 			{question : String, answers : [{ answerType : String, answer : String}], choices : [{ answerType : String, answer : String}]}
 		]

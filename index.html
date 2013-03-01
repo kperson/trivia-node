@@ -114,6 +114,7 @@
 
 				
 				var bindTriviaGame = function() {
+				
 					$('#trivia-game').bind('submit', function(e) {
 						e.preventDefault();
 						var inputs = $('#trivia-game input');
@@ -124,6 +125,10 @@
 								return o;
 						});
 						socket.emit('createTrivia', form[0]);
+						var form = {};
+						form.triviaName = $('input[name="triviaName"]',this).val();	
+						console.log('hello');
+						socket.emit('createTrivia', form);
 					});
 				};	
 
