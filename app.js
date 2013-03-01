@@ -68,7 +68,11 @@ io.sockets.on('connection',function(socket) {
 		console.log('called');
 		var name = data.triviaName;
 		var trivia = new Trivia({triviaName : name, sessionId : clientInfo[socket.id].sessionId });
-		trivia.save();
+		trivia.save(function(err, doc){
+			console.log(doc.id);
+			socket.emit('onTriviaCreated', { triviaId : doc.id });
+		});;
+		
 	});
 	
 	socket.on('register', function(data){
