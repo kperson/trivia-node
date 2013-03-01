@@ -66,9 +66,6 @@ io.sockets.on('connection',function(socket) {
 	});
 	
 	
-	
-	
-	
 	socket.on('createTrivia', function(data){
 		var name = data.triviaName;
 		var triviaName = Trivia({triviaName : name });

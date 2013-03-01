@@ -116,13 +116,8 @@
 				var bindTriviaGame = function() {
 					$('#trivia-game').bind('submit', function(e) {
 						e.preventDefault();
-						var inputs = $('#trivia-game input');
-						var form = $.map(inputs, function(n, i)
-						{
-								var o = {};
-								o[n.name] = $(n).val();
-								return o;
-						});
+						var form = {};
+						form.triviaName = $('input[name="triviaName"]',this).val();	
 						socket.emit('createTrivia', form);
 					});
 				};	
