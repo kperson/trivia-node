@@ -60,17 +60,14 @@ io.sockets.on('connection',function(socket) {
 	socket.emit('request', {});
 	
 	socket.on('registerClient', function(data) {
-		var sessionId =  data.id;
 		clientInfo[socket.id].sessionId = data.id;
 	});
 	
-	
-	
-	
-	
+		
 	socket.on('createTrivia', function(data){
 		var name = data.triviaName;
-		var triviaName = Trivia({triviaName : name });
+		var trivia = new Trivia({triviaName : name, sessionId : clientInfo[socket.id].sessionId });
+		trivia.save();
 	});
 	
 	socket.on('register', function(data){
