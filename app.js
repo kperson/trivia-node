@@ -61,6 +61,7 @@ io.sockets.on('connection',function(socket) {
 	
 	socket.on('registerClient', function(data) {
 		clientInfo[socket.id].sessionId = data.id;
+		console.log(data.id);
 	});
 	
 		
