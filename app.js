@@ -46,11 +46,8 @@ io.sockets.on('connection',function(socket) {
 	
 	clientInfo[socket.id] =  { };
 	
-	socket.emit('requestRegister', {});
 	socket.emit('message', { messageKey : 'requestRegister', data :{ } });
-	
-
-	
+		
 	socket.on('registerClient', function(data){
 		clientInfo[socket.id].sessionId = data.sessionId;
 		
