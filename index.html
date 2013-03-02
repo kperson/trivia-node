@@ -16,6 +16,7 @@
 			$(document).ready(function() {		
 				JS.require('JS.Observable', function() {
 					
+					var utility = new Utility();
 					var socket = io.connect('http://localhost:8080');
 					var remoteSender = function(key, data) {
 						socket.emit(key, data);
@@ -39,10 +40,17 @@
 						setupMessageEvents : function(){
 							var curr = this;
 							this.bindMessageEvent('requestRegister', function(data, isLocal){
-								var id = Math.random().toString(36).substr(2,16);
-								var cookieValue = $.cookie('registerClient') == undefined ? $.cookie('registerClient', id, { expires: 365, path: '/' }) :  $.cookie('registerClient');
-								curr.sendRemoteMessage('registerClient', { sessionId : cookieValue });
+								console.log(utility.randomString(32));
+								if($.cookie('registerClient') == undefined){
+									var id = utility.randomString(32);
+									$.cookie('registerClient', id, { expires: 365, path: '/' });
+								}
+								else{
+									$.cookie('registerClient', $.cookie('registerClient'), { expires: 365, path: '/' });
+								}
+								curr.sendRemoteMessage('registerClient', { sessionId : $.cookie('registerClient') });
 							});
+							
 
 							this.bindMessageEvent('triviaCreated', function(data, isLocal) {
 								view.displayTriviaEdit(data.triviaId);
