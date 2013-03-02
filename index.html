@@ -40,7 +40,6 @@
 						setupMessageEvents : function(){
 							var curr = this;
 							this.bindMessageEvent('requestRegister', function(data, isLocal){
-								console.log(utility.randomString(32));
 								if($.cookie('registerClient') == undefined){
 									var id = utility.randomString(32);
 									$.cookie('registerClient', id, { expires: 365, path: '/' });
