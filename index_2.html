@@ -4,47 +4,118 @@
 	<title>Trivia</title>
 	<head>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+		<script src="/assets/js/underscore-min.js"></script>
+		<script src="/assets/js/backbone-min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
+		<script src="/assets/js/mustache.js"></script>
+		<script type="text/javascript">JSCLASS_PATH = '/assets/js/jsclass-min'</script>
+		<script type="text/javascript" src="/assets/js/jsclass-min/loader-browser.js"></script>
+		<script src="/assets/js/jquery.cookie.js"></script>
+		<script src="/assets/js/fragment.js"></script>
 		<script type="text/javascript"> 
-			$(document).ready(function() {
-				var socket = io.connect('http://localhost:8080');
-				var currQuestion;
-				socket.on('question', function (question) {
-					currQuestion = question;
-					$('#question').html('Question: ' + currQuestion['question']);
-					$('#answer').val('');
-					$('#status').html(currQuestion['timeLimit'] + ' seconds to answer');
-					$('#answer').focus();
+			$(document).ready(function() {		
+				JS.require('JS.Observable', function() {
 					
-				});
-				
-				socket.on('correct', function (data) {
-					$('#status').html('Correct!');
-				});
-				
-				socket.on('incorrect', function (data) {
-					currQuestion = question;
-					$('#status').html('Incorrect, the answer was ' + data['answer']);
-				});
+					var socket = io.connect('http://localhost:8080');
+					var remoteSender = function(key, data) {
+						socket.emit(key, data);
+					};		
+					var locBroadcaster = new LocalBroadcaster();
+					socket.on('message', function(data){
+						locBroadcaster.notifyObservers({ messageKey : data.messageKey, data : data.data, isLocal : false });
+					});
+									
+					var CreateFragment = new JS.Class(Fragment, {
+						
+						setupVisual : function(){
+							var curr = this;
+							$.get('/assets/templates/trivia.html',function(resp) {
+								var content = Mustache.render(resp,{'action' : 'add'});
+								$('#contentView').html(content);
+								curr.visualComplete();
+							});
+						},
+						
+						setupMessageEvents : function(){
+							var curr = this;
+							this.bindMessageEvent('requestRegister', function(data, isLocal){
+								var id = Math.random().toString(36).substr(2,16);
+								var cookieValue = $.cookie('registerClient') == undefined ? $.cookie('registerClient', id, { expires: 365, path: '/' }) :  $.cookie('registerClient');
+								curr.sendRemoteMessage('registerClient', { sessionId : cookieValue });
+							});
 
-				socket.on('over', function (summary) {
-					$('#status').html('Game over, score : ' + summary['correct'] + '/' + summary['total']);
-				});				
-				
-				$('#form').bind('submit', function(e){
-					e.preventDefault();
-					var answer = $.trim($('#answer').val());
-					socket.emit('answer', { value : answer, index : currQuestion['index'] });
+							this.bindMessageEvent('triviaCreated', function(data, isLocal) {
+								view.displayTriviaEdit(data.triviaId);
+							});
+							
+						},
+						
+						setupDOMEvents : function() {
+							var curr = this;
+							this.bindDOMEvent('#trivia-game', 'submit', function(e){
+								e.preventDefault();
+								var form = {};
+								form.triviaName = $('input[name="triviaName"]',this).val();	
+								curr.sendRemoteMessage('createTrivia', form);
+							});							
+						},
+						
+						setupComplete: function() {
+							this.reRegister();	
+						}
+						
+					});
+	
+						
+					
+					var ApplicationRouter = Backbone.Router.extend({
+				  		routes: {
+				  			"": "home",
+					  		"trivia/:id/edit": "editTrivia",
+					  		"trivia/add": "createTrivia",
+				  		},
+	
+				  		home: function() {
+				  		},
+				  		
+				  		createTrivia: function() {
+				  			var createFragment = new CreateFragment(locBroadcaster, remoteSender);
+				  			createFragment.setup();
+				  		},
+	
+				  		editTrivia: function(triviaId) {
+		
+			      		},
+	
+				  		updateTrivia: function(triviaId) {
+				  		}
+	
+					});	
+					
+					var ApplicationView = Backbone.View.extend({
+					
+					  initialize: function(){
+						  this.router = new ApplicationRouter();
+						  Backbone.history.start({pushState: true});
+					  },
+					
+					  displayHome: function(){
+						  this.router.navigate("home", true);
+					  },
+					  
+					  displayTriviaEdit: function(id){
+						  this.router.navigate("trivia/" + id + "/edit/", true);
+					  }			  
+					
+					});
+					
+					var view = new ApplicationView();
 				});
 			});
 		</script>
 	</head>
 	<body>
-		<p id="status">&nbsp;</p>
-		<form method="post" action="#" id="form">
-		<p id="question"></p>
-		<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
-		<p><button>Submit</button>
-		</form>
+		<div id="contentView">	
+		</div>	
 	</body>
 </html>

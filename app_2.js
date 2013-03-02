@@ -1,81 +1,71 @@
-var questions = [
-	{ question : 'What is the capital on Indiana?', answer : 'Indianapolis', timeLimit : 8 },
-	{ question : 'What is the square root of 49?', answer : '7', timeLimit : 6},
-];
+var config = require('./config.json');
 
-var currQuestionIndex = -1;
-var gameStartsIn = 4;
+var mongoose = require('mongoose');
+var schema = mongoose.Schema;
+mongoose.connect(config.mongoConnection);
+
+var models = require('./models/game-models.js').makeModels(schema, mongoose);
+var Message = models['message'];
+var Trivia = models['trivia'];
+var TriviaSession = models['trivia_session'];
+var Session = models['session'];
+var User = models['user'];
+
 var clientInfo = { };
 
 var app = require('http').createServer(handler)
-  , io = require('socket.io').listen(app)
-  , fs = require('fs')
+	,io = require('socket.io').listen(app)
+	,fs = require('fs')
 
-app.listen(8080);
+app.listen(config.port);	
 
+	
+if(config.allowedSockets.length != 0){
+	io.set('origins', config.allowedSockets.join(', '));
+}  
 function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-    res.writeHead(200);
-    res.end(data);
+	var lastChar = req.url.substring(req.url.length - 1, req.url.length);
+	var fileToRead = req.url.substring(1, 7) == 'assets' || req.url == '/favicon.ico' ? req.url : '/index.html';
+	var extMap = { 'gif' : 'image/gif', 'jpg' : 'image/jpeg', 'jpeg' : 'image/jpeg', 'png' : 'image/png', 'html' : 'text/html', 'ico' : 'image/x-icon', 'js' : 'application/javascript', 'css' : 'text/css', 'json' : 'application/json' };
+	var data = fileToRead.split('.');
+	var ext = data[data.length - 1].toLowerCase(); 
+	var contentType = extMap[ext] == undefined ? extMap['html'] : extMap[ext];
+  
+	fs.readFile(__dirname + fileToRead, function (err, data) {
+		if (err) {
+			res.writeHead(500);
+			return res.end('Error loading ' + fileToRead);
+		}
+		res.setHeader('X-UA-Compatible', 'IE=edge');
+		res.writeHead(200, {'Content-Type': contentType });
+		res.end(data);
   });
 }
 
-
-/*
-io.sockets.emit - Everyone
-socket.emit - Individual
-socket.broadcast - Everyone except sender
-io.sockets.sockets[socketId] - Find socketId and send to individual
-*/
-
-io.sockets.on('connection', function (socket) {
-  clientInfo[socket.id] = { correct : 0, incorrect : 0 };	
-  
-  socket.emit('welcome', { message : 'Welcome!' });
-  
-  
-  socket.on('answer', function (data) {
-    var question = questions[data['index']];
-	if(question['answer'].toLowerCase() == data['value'].toLowerCase()){
-		clientInfo[socket.id].correct++;
-		socket.emit('correct', { index : data['index'] });
-	}
-	else{
-		clientInfo[socket.id].incorrect++;
-		socket.emit('incorrect', { index : data['index'], answer : question['answer'] });
-	}
-  });
+io.sockets.on('connection',function(socket) {
+	
+	clientInfo[socket.id] =  { };
+	
+	socket.emit('requestRegister', {});
+	socket.emit('message', { messageKey : 'requestRegister', data :{ } });
+		
+	socket.on('registerClient', function(data){
+		clientInfo[socket.id].sessionId = data.sessionId;
+		
+	});	
+	
+	socket.on('reRegister', function(data) {
+		socket.emit('requestRegister', {});
+	});	
+	
+	socket.on('createTrivia', function(data){
+		console.log(data);
+		var name = data.triviaName;
+		var trivia = new Trivia({triviaName : name, sessionId : clientInfo[socket.id].sessionId });
+		trivia.save(function(err, doc){
+			socket.emit('message', { messageKey : 'triviaCreated', data : {triviaId : doc.id } });
+		});
+		
+	});
+	
 });
-
-io.sockets.on('disconnect', function(socket) {
-	//delete clientInfo[socket.id];
-});
-
-setTimeout(function() {
-	askQuestion();
-}, gameStartsIn * 1000);
-
-var askQuestion = function() {
-	currQuestionIndex++;
-	if(currQuestionIndex < questions.length){
-		question = questions[currQuestionIndex];
-		question['index'] = currQuestionIndex;
-		io.sockets.emit('question', question);
-		setTimeout(askQuestion, question.timeLimit * 1000); 
-	}
-	else{
-		for(var socketId in clientInfo){
-			try{
-				io.sockets.sockets[socketId].emit('over', { total : questions.length,  correct : clientInfo[socketId].correct, incorrect : clientInfo[socketId].incorrect });
-			}
-			catch(err){
-				console.log(err);
-			}
-		}
-	}
-};

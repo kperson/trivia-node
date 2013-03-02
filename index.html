@@ -8,143 +8,114 @@
 		<script src="/assets/js/backbone-min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="/assets/js/mustache.js"></script>
+		<script type="text/javascript">JSCLASS_PATH = '/assets/js/jsclass-min'</script>
+		<script type="text/javascript" src="/assets/js/jsclass-min/loader-browser.js"></script>
 		<script src="/assets/js/jquery.cookie.js"></script>
+		<script src="/assets/js/fragment.js"></script>
 		<script type="text/javascript"> 
-			$(document).ready(function() {
-				var socket = io.connect('http://localhost:8080');
-
-				socket.on('request',function() {
-					var id = Math.random().toString(36).substr(2,16);
-					socket.emit('registerClient',{'id' : id});
-					$.cookie('registerClient', id, { expires: 7, path: '/' });
-				});
-
-				socket.on('onTriviaCreated',function(triviaId) {
-					console.log(triviaId);
-				});
-
-				var ApplicationRouter = Backbone.Router.extend({
-
-				  //map url routes to contained methods
-				  routes: {
-					  "": "home",
-					  "home/": "home",
-					  "trivia/:id/edit": "editTrivia",
-					  "trivia/add": "createTrivia",
-						"post/:id/": "post",
-					  "contact": "contact"
-				  },
-
-				  home: function() {
-					  //this.showPage('div#home-page');
-				  },
-
-				  post: function(postId) {
-						console.log(parseInt(postId));
-					  //this.showPage('div#about-page');
-				  },
-
-				  createTrivia: function() {
-						$.get('/assets/templates/trivia.html',function(resp) {
-							if(!$('#contentTrivia').length) {
-								var content = Mustache.render(resp,{'action' : 'add'});
-								$('.contentBlock').hide();
-								$('#contentView').append(content);
-							}	
-							else {
-								$('.contentBlock').hide();
-								$('#contentTrivia').show();
-							}
-							bindTriviaGame();
-						});
-				  },
-
-				  editTrivia: function(triviaId) {
-					},
-
-				  updateTrivia: function(triviaId) {
-						console.log('game');
-				  },
-
-				  contact: function() {
-					  //this.showPage('div#contact-page');
-				  }
-
-				});		
-
-				
-				var ApplicationView = Backbone.View.extend({
-
-				  //bind view to body element (all views should be bound to DOM elements)
-
-				  //observe navigation click events and map to contained methods
-				  events: {
-
-				  },
-
-				  //called on instantiation
-				  initialize: function(){
-					  //set dependency on ApplicationRouter
-					  this.router = new ApplicationRouter();
-					  //call to begin monitoring uri and route changes
-					  Backbone.history.start({pushState: true});
-				  },
-
-				  displayHome: function(){
-					  //update url and pass true to execute route method
-					  this.router.navigate("home", true);
-				  },
-
-				  displayAbout: function(){
-					  //update url and pass true to execute route method
-					  this.router.navigate("about", true);
-				  },
-
-				  displayContact: function(){
-					  //update url and pass true to execute route method
-					  this.router.navigate("contact", true);
-				  },
-				  
-				  displayPost: function(){
-					  //update url and pass true to execute route method
-					  this.router.navigate("post/123456/", true);
-				  }				  
-
-				});
-
-				var view = new ApplicationView();
-				
-				$('#kelton').bind('click', function(e) {
-					e.preventDefault();
-					view.displayPost();
-					var name = $(this).attr('data-name');
-					socket.emit('kelton', {'name' : name});
-				});
-
-				var bindTriviaGame = function() {
-				
-					$('#trivia-game').bind('submit', function(e) {
-						e.preventDefault();
-						var form = {};
-						form.triviaName = $('input[name="triviaName"]',this).val();	
-						socket.emit('createTrivia', form);
+			$(document).ready(function() {		
+				JS.require('JS.Observable', function() {
+					
+					var socket = io.connect('http://localhost:8080');
+					var remoteSender = function(key, data) {
+						socket.emit(key, data);
+					};		
+					var locBroadcaster = new LocalBroadcaster();
+					socket.on('message', function(data){
+						locBroadcaster.notifyObservers({ messageKey : data.messageKey, data : data.data, isLocal : false });
 					});
-				};	
+									
+					var CreateFragment = new JS.Class(Fragment, {
+						
+						setupVisual : function(){
+							var curr = this;
+							$.get('/assets/templates/trivia.html',function(resp) {
+								var content = Mustache.render(resp,{'action' : 'add'});
+								$('#contentView').html(content);
+								curr.visualComplete();
+							});
+						},
+						
+						setupMessageEvents : function(){
+							var curr = this;
+							this.bindMessageEvent('requestRegister', function(data, isLocal){
+								var id = Math.random().toString(36).substr(2,16);
+								var cookieValue = $.cookie('registerClient') == undefined ? $.cookie('registerClient', id, { expires: 365, path: '/' }) :  $.cookie('registerClient');
+								curr.sendRemoteMessage('registerClient', { sessionId : cookieValue });
+							});
 
+							this.bindMessageEvent('triviaCreated', function(data, isLocal) {
+								view.displayTriviaEdit(data.triviaId);
+							});
+							
+						},
+						
+						setupDOMEvents : function() {
+							var curr = this;
+							this.bindDOMEvent('#trivia-game', 'submit', function(e){
+								e.preventDefault();
+								var form = {};
+								form.triviaName = $('input[name="triviaName"]',this).val();	
+								curr.sendRemoteMessage('createTrivia', form);
+							});							
+						},
+						
+						setupComplete: function() {
+							this.reRegister();	
+						}
+						
+					});
+	
+						
+					
+					var ApplicationRouter = Backbone.Router.extend({
+				  		routes: {
+				  			"": "home",
+					  		"trivia/:id/edit": "editTrivia",
+					  		"trivia/add": "createTrivia",
+				  		},
+	
+				  		home: function() {
+				  		},
+				  		
+				  		createTrivia: function() {
+				  			var createFragment = new CreateFragment(locBroadcaster, remoteSender);
+				  			createFragment.setup();
+				  		},
+	
+				  		editTrivia: function(triviaId) {
+		
+			      		},
+	
+				  		updateTrivia: function(triviaId) {
+				  		}
+	
+					});	
+					
+					var ApplicationView = Backbone.View.extend({
+					
+					  initialize: function(){
+						  this.router = new ApplicationRouter();
+						  Backbone.history.start({pushState: true});
+					  },
+					
+					  displayHome: function(){
+						  this.router.navigate("home", true);
+					  },
+					  
+					  displayTriviaEdit: function(id){
+						  this.router.navigate("trivia/" + id + "/edit/", true);
+					  }			  
+					
+					});
+					
+					var view = new ApplicationView();
+				});
 			});
 		</script>
 	</head>
 	<body>
-		<div id="contentView">
-			<div id="main" class="contentBlock">
-				<p id="status">&nbsp;</p>
-				<form method="post" action="#" id="form">
-				<p id="question"></p>
-				<p id="answer-p">Answer: <input type="text" name="answer" id="answer"/>
-				<p><button>Submit</button>
-				</form>
-				<a href="#" id="kelton" data-name="kperson">Click Me</a>
-			</div>	
+		<div id="contentView">	
 		</div>	
 	</body>
 </html>
