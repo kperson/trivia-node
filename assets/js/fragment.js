@@ -37,10 +37,6 @@ JS.require('JS.Observable', function() {
 			this.setupComplete();
 		},	
 		
-		reRegister: function(){
-			this.sendRemoteMessage('reRegister', {});
-		},
-		
 		setupVisual: function() {
 		},
 		

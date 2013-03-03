@@ -46,15 +46,13 @@ io.sockets.on('connection',function(socket) {
 	
 	clientInfo[socket.id] =  { };
 	
-	socket.emit('message', { messageKey : 'requestRegister', data :{ } });
 		
 	socket.on('registerClient', function(data){
-		clientInfo[socket.id].sessionId = data.sessionId;
-		
+		clientInfo[socket.id].sessionId = data.sessionId;		
 	});	
 	
 	socket.on('reRegister', function(data) {
-		socket.emit('requestRegister', {});
+		socket.emit('message', { messageKey : 'requestRegister', data :{ } });
 	});	
 	
 	socket.on('createTrivia', function(data){

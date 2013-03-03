@@ -25,6 +25,23 @@
 					socket.on('message', function(data){
 						locBroadcaster.notifyObservers({ messageKey : data.messageKey, data : data.data, isLocal : false });
 					});
+					
+					var InitFragment = new JS.Class(Fragment, {
+						setupMessageEvents : function(){
+							var curr = this;
+							this.bindMessageEvent('requestRegister', function(data, isLocal){
+								if($.cookie('registerClient') == undefined){
+									var id = utility.randomString(32);
+									$.cookie('registerClient', id, { expires: 365, path: '/' });
+								}
+								else{
+									$.cookie('registerClient', $.cookie('registerClient'), { expires: 365, path: '/' });
+								}
+								curr.sendRemoteMessage('registerClient', { sessionId : $.cookie('registerClient') });
+							});
+						}
+											
+					});
 									
 					var CreateFragment = new JS.Class(Fragment, {
 						
@@ -38,23 +55,9 @@
 						},
 						
 						setupMessageEvents : function(){
-							var curr = this;
-							this.bindMessageEvent('requestRegister', function(data, isLocal){
-								if($.cookie('registerClient') == undefined){
-									var id = utility.randomString(32);
-									$.cookie('registerClient', id, { expires: 365, path: '/' });
-								}
-								else{
-									$.cookie('registerClient', $.cookie('registerClient'), { expires: 365, path: '/' });
-								}
-								curr.sendRemoteMessage('registerClient', { sessionId : $.cookie('registerClient') });
-							});
-							
-
 							this.bindMessageEvent('triviaCreated', function(data, isLocal) {
 								view.displayTriviaEdit(data.triviaId);
 							});
-							
 						},
 						
 						setupDOMEvents : function() {
@@ -68,12 +71,13 @@
 						},
 						
 						setupComplete: function() {
-							this.reRegister();	
 						}
 						
 					});
 	
 						
+					
+					
 					
 					var ApplicationRouter = Backbone.Router.extend({
 				  		routes: {
@@ -117,6 +121,10 @@
 					});
 					
 					var view = new ApplicationView();
+				
+					var initFragment = new Fragment(locBroadcaster, remoteSender);
+					initFragment.sendRemoteMessage('reRegister', { });
+
 				});
 			});
 		</script>
