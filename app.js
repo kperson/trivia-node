@@ -80,11 +80,8 @@ io.sockets.on('connection',function(socket) {
 		console.log('Registration Info: ' + JSON.stringify(data));
 		sessionIdList.push(data.sessionId);
 		clientInfo[data.sessionId] = { socketId : socket.id };	
-		clientInfoReverse[socket.id] = data.sessionId;
-		console.log("ClientInfo: " + JSON.stringify(clientInfo));
-		console.log("ClientInfoReverse: " + JSON.stringify(clientInfoReverse));
-		console.log("SessionList: " + JSON.stringify(sessionIdList));
-		
+		clientInfoReverse[socket.id] = data.sessionId;	
+		socket.sendMessage('registerComplete', { });
 	});	
 	
 	socket.on('reRegister', function(data) {
@@ -102,10 +99,16 @@ io.sockets.on('connection',function(socket) {
 			}
 			else{
 				console.log('SessionId: ' + doc.sessionId);
-				socket.sendMessage('triviaCreated', { triviaId : doc.id }, doc.sessionId);
+				socket.sendMessage('triviaCreated', { triviaId : doc.id });
 			}
 		});
-		
+	});
+	
+	socket.on('getMyTriviaByTriviaId', function(data) {
+		console.log(data);
+		Trivia.findOne({ _id :  mongoose.Types.ObjectId(data.triviaId), sessionId : clientInfoReverse[socket.id] }).exec(function(err, trivia){
+			socket.sendMessage('myTrivia', trivia);
+		});
 	});
 	
 	
@@ -132,9 +135,16 @@ setInterval(function() {
 		if(!err){
 			msgs.forEach(function(msg){
 				console.log('Sending queued: ' +  JSON.stringify(msg.normalize()));		
-				msg.markAsSent(function(err, doc){
-					io.sockets.sockets[clientInfo[msg.sessionId].socketId].emit('message', msg.normalize());													
-				});
+				if(clientInfo[msg.sessionId] != undefined){
+					msg.markAsSent(function(err, doc){
+						try {
+							io.sockets.sockets[clientInfo[msg.sessionId].socketId].emit('message', msg.normalize());
+						}
+						catch(err){
+							console.log(err);
+						}
+					});
+				}
 			});
 		}
 	});

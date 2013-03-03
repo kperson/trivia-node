@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<meta charset="utf-8">
-	<title>Trivia</title>
+	<title></title>
 	<head>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 		<script src="/assets/js/underscore-min.js"></script>
@@ -27,7 +27,15 @@
 						locBroadcaster.notifyObservers({ messageKey : data.messageKey, data : data.data, isLocal : false });
 					});
 					
+					
+					
 					var InitFragment = new JS.Class(Fragment, {
+						
+						initialize : function(){
+							this.callSuper();
+							this.set('isAuth', false);
+						},
+							
 						setupMessageEvents : function(){
 							var curr = this;
 							this.bindMessageEvent('requestRegister', function(data, isLocal){
@@ -40,6 +48,10 @@
 								}
 								curr.sendRemoteMessage('registerClient', { sessionId : $.cookie('registerClient') });
 							});
+							
+							this.bindMessageEvent('registerComplete', function(data, isLocal){
+								curr.set('isAuth', true);
+							});
 						},
 						
 						setupVisual : function() {
@@ -48,6 +60,33 @@
 						
 						setupComplete: function(){
 							}
+						
+					});
+					
+					var initFragment = new InitFragment(locBroadcaster, remoteSender);
+					initFragment.setup();
+					initFragment.sendRemoteMessage('reRegister', { });
+					
+					var EditFragment = new JS.Class(Fragment, {
+						setupVisual : function(){
+							this.visualComplete();
+						},
+						
+						setupMessageEvents : function(){
+							
+							var curr = this;
+							this.bindMessageEvent('myTrivia', function(trivia, isLocal) {
+								$('title').html(trivia.triviaName);
+							});
+							
+							this.bindMessageEvent('registerComplete', function(data, isLocal){
+								curr.getTrivia();
+							});
+						},
+						
+						getTrivia : function(){
+							this.sendRemoteMessage('getMyTriviaByTriviaId', { triviaId : this.get('triviaId') });
+						}
 						
 					});
 									
@@ -87,7 +126,7 @@
 					var ApplicationRouter = Backbone.Router.extend({
 				  		routes: {
 				  			'': 'home',
-					  		'trivia/:id/edit': 'editTrivia',
+					  		'trivia/:id/edit/': 'editTrivia',
 					  		'trivia/add': 'createTrivia',
 				  		},
 	
@@ -98,10 +137,17 @@
 				  		createTrivia: function() {
 				  			var createFragment = new CreateFragment(locBroadcaster, remoteSender);
 				  			createFragment.setup();
+							$('title').html('Create Trivia');
+
 				  		},
 	
 				  		editTrivia: function(triviaId) {
-		
+				  			var editFragment = new EditFragment(locBroadcaster, remoteSender);
+				  			editFragment.setup();
+				  			editFragment.set('triviaId', triviaId);
+				  			if(initFragment.get('isAuth')) { 
+			      				editFragment.getTrivia();
+			      			}
 			      		},
 	
 				  		updateTrivia: function(triviaId) {
@@ -128,9 +174,7 @@
 					
 					var view = new ApplicationView();
 				
-					var initFragment = new InitFragment(locBroadcaster, remoteSender);
-					initFragment.setup();
-					initFragment.sendRemoteMessage('reRegister', { });
+
 
 				});
 			});

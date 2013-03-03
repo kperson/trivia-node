@@ -149,7 +149,8 @@ function makeModels(Schema, mongoose) {
 		}
 		return rs;
 	};
-	
+
+		
 	Message.statics.dequeue = function(sessionIds, callback) {
 		var ts = Math.round((new Date()).getTime() / 1000);
 		var query = { };

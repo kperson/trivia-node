@@ -18,7 +18,6 @@ JS.require('JS.Observable', function() {
 		},
 		
 		set: function(key, value) {
-			console.log(value);
 			this.data[key] = value;
 		},
 		
