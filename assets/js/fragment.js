@@ -27,12 +27,12 @@ JS.require('JS.Observable', function() {
 		
 		setup : function(localSend) {
 			if(this.open) {
+				this.setupMessageEvents();
 				this.setupVisual();
 			}
 		},
 		visualComplete: function() {
-			this.setupDOMEvents();
-			this.setupMessageEvents();		
+			this.setupDOMEvents();	
 			this.setupComplete();
 		},	
 		

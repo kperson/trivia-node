@@ -74,8 +74,7 @@ io.sockets.on('connection',function(socket) {
 	socket.findSessionId = function(){
 		return clientInfoReverse[socket.id];
 	}
-	
-   	
+		
 	socket.on('registerClient', function(data){
 		console.log('Registration Info: ' + JSON.stringify(data));
 		sessionIdList.push(data.sessionId);

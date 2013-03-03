@@ -69,6 +69,7 @@
 					
 					var EditFragment = new JS.Class(Fragment, {
 						setupVisual : function(){
+							$('title').html(this.get('trivia').triviaName);
 							this.visualComplete();
 						},
 						
@@ -76,7 +77,9 @@
 							
 							var curr = this;
 							this.bindMessageEvent('myTrivia', function(trivia, isLocal) {
-								$('title').html(trivia.triviaName);
+								curr.set('trivia', trivia);
+								
+								curr.setupVisual();
 							});
 							
 							this.bindMessageEvent('registerComplete', function(data, isLocal){
@@ -136,15 +139,15 @@
 				  		
 				  		createTrivia: function() {
 				  			var createFragment = new CreateFragment(locBroadcaster, remoteSender);
-				  			createFragment.setup();
+				  			this.setup();
 							$('title').html('Create Trivia');
 
 				  		},
 	
 				  		editTrivia: function(triviaId) {
 				  			var editFragment = new EditFragment(locBroadcaster, remoteSender);
-				  			editFragment.setup();
 				  			editFragment.set('triviaId', triviaId);
+				  			editFragment.setupMessageEvents();
 				  			if(initFragment.get('isAuth')) { 
 			      				editFragment.getTrivia();
 			      			}
