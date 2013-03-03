@@ -12,6 +12,8 @@ var Session = models['session'];
 var User = models['user'];
 
 var clientInfo = { };
+var sessionIdList =  [];
+var clientInfoReverse = { };
 
 var app = require('http').createServer(handler)
 	,io = require('socket.io').listen(app)
@@ -44,25 +46,96 @@ function handler (req, res) {
 
 io.sockets.on('connection',function(socket) {
 	
-	clientInfo[socket.id] =  { };
 	
-		
+	socket.sendMessage = function(key, value, sessionId) {
+		if(sessionId == undefined){
+			if (clientInfo[socket.id] == undefined){
+				sessionId = clientInfo[socket.id];
+			}
+			else{
+				sessionId = null;
+			}
+		}
+		var status = sessionId == null ? 'sent' : 'unsent';
+		var msg = Message({ sessionId : sessionId, status : status });
+		msg.put('messageKey', key);
+		msg.put('data', value);
+		msg.sendIn(0, function(err, doc){
+			if(sessionId == null){
+				console.log('Sending: ' +  JSON.stringify(doc.normalize()));
+				socket.emit('message', doc.normalize());
+			}
+			else{
+				console.log('Queueing: ' +  JSON.stringify(doc.normalize()));				
+			}
+		});	
+	};
+	
+	socket.findSessionId = function(){
+		return clientInfoReverse[socket.id];
+	}
+	
+   	
 	socket.on('registerClient', function(data){
-		clientInfo[socket.id].sessionId = data.sessionId;		
+		console.log('Registration Info: ' + JSON.stringify(data));
+		sessionIdList.push(data.sessionId);
+		clientInfo[data.sessionId] = { socketId : socket.id };	
+		clientInfoReverse[socket.id] = data.sessionId;
+		console.log("ClientInfo: " + JSON.stringify(clientInfo));
+		console.log("ClientInfoReverse: " + JSON.stringify(clientInfoReverse));
+		console.log("SessionList: " + JSON.stringify(sessionIdList));
+		
 	});	
 	
 	socket.on('reRegister', function(data) {
-		socket.emit('message', { messageKey : 'requestRegister', data :{ } });
+		socket.sendMessage('requestRegister', { });
 	});	
 	
 	socket.on('createTrivia', function(data){
-		console.log(data);
+		console.log('Trivia Info: ' + JSON.stringify(data));
 		var name = data.triviaName;
-		var trivia = new Trivia({triviaName : name, sessionId : clientInfo[socket.id].sessionId });
-		trivia.save(function(err, doc){
-			socket.emit('message', { messageKey : 'triviaCreated', data : {triviaId : doc.id } });
+		var trivia = new Trivia({triviaName : name, sessionId : socket.findSessionId() });
+		trivia.save(function(err, doc) {
+			console.log('Trivia Save Complete: ' + doc);
+			if(err){
+				console.log('Error: ' + err);
+			}
+			else{
+				console.log('SessionId: ' + doc.sessionId);
+				socket.sendMessage('triviaCreated', { triviaId : doc.id }, doc.sessionId);
+			}
 		});
 		
 	});
 	
+	
+	socket.on('disconnect', function () {
+		console.log('Disconnecting');
+		var foundSessionId = socket.findSessionId();
+		if(foundSessionId != undefined){
+			delete clientInfo[foundSessionId];
+			delete clientInfoReverse[socket.id];
+			for(var i = 0; i < sessionIdList.length; i++){
+				if(sessionIdList[i] == foundSessionId){
+					sessionIdList.splice(i, 1);
+					break;
+				}
+			}			
+		}
+	});
 });
+
+
+
+setInterval(function() {
+	Message.dequeue(sessionIdList, function(err, msgs){
+		if(!err){
+			msgs.forEach(function(msg){
+				console.log('Sending queued: ' +  JSON.stringify(msg.normalize()));		
+				msg.markAsSent(function(err, doc){
+					io.sockets.sockets[clientInfo[msg.sessionId].socketId].emit('message', msg.normalize());													
+				});
+			});
+		}
+	});
+}, config.messageCheckInterval);

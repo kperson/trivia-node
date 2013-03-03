@@ -157,7 +157,6 @@ function makeModels(Schema, mongoose) {
 		query.sendAt = { '$lte' : ts };
 		query.messageExpiration = { '$gte' : ts };
 		query['$or'] = [ {status : 'unsent'}, { status : 'pending', timeout : { '$lte' : ts }}];
-		
 		var update = { };
 		update.lockId = Math.random().toString(36).substr(2,16);
 		update.status = 'pending';

@@ -79,9 +79,7 @@ JS.require('JS.Observable', function() {
 	
 		
 		bindMessageEvent : function(messageKey, callback){
-			console.log(messageKey);
-			if(this.open){
-				
+			if(this.open){				
 				var functionName = 'anonymous_f_' + this.messageBindEvents.length;
 				this.messageBindEvents.push(functionName);
 				this['__proto__'][functionName] = function(msg) {

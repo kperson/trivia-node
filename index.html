@@ -31,7 +31,7 @@
 						setupMessageEvents : function(){
 							var curr = this;
 							this.bindMessageEvent('requestRegister', function(data, isLocal){
-								if($.cookie('registerClient') == undefined){
+									if($.cookie('registerClient') == undefined){
 									var id = utility.randomString(32);
 									$.cookie('registerClient', id, { expires: 365, path: '/' });
 								}
@@ -44,7 +44,10 @@
 						
 						setupVisual : function() {
 							this.visualComplete();
-						}
+						},
+						
+						setupComplete: function(){
+							}
 						
 					});
 									
@@ -80,7 +83,7 @@
 						
 					});
 	
-					
+
 					var ApplicationRouter = Backbone.Router.extend({
 				  		routes: {
 				  			'': 'home',
@@ -90,6 +93,7 @@
 	
 				  		home: function() {
 				  		},
+				  		
 				  		
 				  		createTrivia: function() {
 				  			var createFragment = new CreateFragment(locBroadcaster, remoteSender);
