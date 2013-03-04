@@ -31,6 +31,8 @@ function socketSend(key, value, sessionId, sendIn) {
 							io.sockets.sockets[clientInfo[doc.sessionId].socketId].emit('message', doc.normalize());
 						}
 						catch(err){
+							doc.status = 'unsent';
+							doc.save();
 							console.log(err);
 						}
 					}
@@ -75,6 +77,8 @@ function messageCheck(time) {
 								io.sockets.sockets[clientInfo[msg.sessionId].socketId].emit('message', msg.normalize());
 							}
 							catch(err){
+								msg.status = 'unsent';
+								msg.save();
 								console.log(err2);
 							}
 						});
