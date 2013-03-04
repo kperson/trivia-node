@@ -9,7 +9,7 @@ function socketSend(key, value, sessionId, sendIn) {
 		}
 	}
 	
-	var status = sessionId == null ? 'sent' : 'unsent';
+	var status = sessionId == null || !(clientInfo[sessionId] === undefined) ? 'sent' : 'unsent';
 	var msg = Message({ sessionId : sessionId, status : status });
 	msg.put('messageKey', key);
 	msg.put('data', value);
@@ -19,9 +19,23 @@ function socketSend(key, value, sessionId, sendIn) {
 		if(err){
 			console.log(err);
 		}
-		if(sessionId == null){
+		if(status == 'sent'){
 			console.log('Sending: ' +  JSON.stringify(doc.normalize()));
-			curr.emit('message', doc.normalize());
+			if(sessionId == null){
+				setTimeout(function(){ curr.emit('message', doc.normalize());}, sendIn * 1000); 
+			}
+			else{
+				setTimeout(function(){ 
+					if(!(clientInfo[sessionId] === undefined)){
+						try{
+							io.sockets.sockets[clientInfo[doc.sessionId].socketId].emit('message', doc.normalize());
+						}
+						catch(err){
+							console.log(err);
+						}
+					}
+				}, sendIn * 1000); 				
+			}
 		}
 		else{
 			console.log('Queueing: ' +  JSON.stringify(doc.normalize()));				
@@ -71,8 +85,26 @@ function messageCheck(time) {
 	}, time);
 }
 
+function registerClient() {
+	this.on('registerClient', function(data){
+		sessionIdList.push(data.sessionId);
+		clientInfo[data.sessionId] = { socketId : this.id };	
+		clientInfoReverse[this.id] = data.sessionId;	
+		this.sendMessage('registerComplete', { });
+	});	
+}
+
+function reRegister() {
+	this.on('reRegister', function(data) {
+		this.sendMessage('requestRegister', { });
+	});	
+}
+
+
 	
 module.exports.socketSend = socketSend;
 module.exports.findSessionId = findSessionId;
 module.exports.disconnect = disconnect;
 module.exports.messageCheck = messageCheck;
+module.exports.registerClient = registerClient;
+module.exports.reRegister = reRegister;

@@ -30,24 +30,9 @@ if(config.allowedSockets.length != 0){
 var socketWrapper = require('./socket-wrapper.js');
 
 io.sockets.on('connection',function(socket) {
-	
-	socket.sendMessage = socketWrapper.socketSend.bind(socket);
-	socket.findSessionId = socketWrapper.findSessionId.bind(socket);
-	socket.disconnect = socketWrapper.disconnect.bind(socket).disconnect();
-	socket.disconnect();
-	
-	
-	socket.on('registerClient', function(data){
-		sessionIdList.push(data.sessionId);
-		clientInfo[data.sessionId] = { socketId : socket.id };	
-		clientInfoReverse[socket.id] = data.sessionId;	
-		socket.sendMessage('registerComplete', { });
-	});	
-	
-	socket.on('reRegister', function(data) {
-		socket.sendMessage('requestRegister', { });
-	});	
-	
+		
+	require('./socket-setup.js').setupSocket(socket, socketWrapper);
+
 	socket.on('createTrivia', function(data){
 		var name = data.triviaName;
 		var trivia = new Trivia({triviaName : name, sessionId : socket.findSessionId() });
