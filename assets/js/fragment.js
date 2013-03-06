@@ -49,6 +49,19 @@ JS.require('JS.Observable', function() {
 			
 		},
 		
+		bindToTemplate: function(url, cache, callback){
+			if(cache[url] === undefined){
+				$.get(url, function(resp) {
+					//resp = resp.replace(/(\r\n|\n|\r)/gm,"");
+					cache[url] = resp;
+					callback(resp)
+				});				
+			}
+			else{
+				callback(cache[url]);
+			}
+		},
+		
 		cleanUp : function() {
 		},
 		
@@ -72,7 +85,8 @@ JS.require('JS.Observable', function() {
 		bindDOMEvent : function(selector, eventType, callback) {
 			if(this.open){
 				this.domEvents.push({ selector : selector, eventType : eventType });
-				$(selector).bind(eventType, callback);
+				//$(selector).bind(eventType, callback);
+				$('body').delegate(selector, eventType, callback);
 			}
 		},
 	
@@ -96,7 +110,8 @@ JS.require('JS.Observable', function() {
 		close : function(){
 			this.close = false;
 			for(var i = 0; i < this.domEvents.length; i++){
-				$(this.domEvents[i].selector).unbind(this.domEvents[i].eventType);
+				$('body').undelegate(this.domEvents[i].selector, this.domEvents[i].eventType);
+				//$(this.domEvents[i].selector).unbind(this.domEvents[i].eventType);
 			}
 			
 			for(var i = 0; i < this.messageBindEvents.length; i++){

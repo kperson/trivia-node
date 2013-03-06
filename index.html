@@ -4,6 +4,7 @@
 	<title></title>
 	<head>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+		<script src="/assets/js/array.js"></script>
 		<script src="/assets/js/underscore-min.js"></script>
 		<script src="/assets/js/backbone-min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
@@ -12,6 +13,9 @@
 		<script type="text/javascript" src="/assets/js/jsclass-min/loader-browser.js"></script>
 		<script src="/assets/js/jquery.cookie.js"></script>
 		<script src="/assets/js/fragment.js"></script>
+		<!--[if lt IE 9]>
+      	<script src="/assets/js/html5.js"></script>
+    	<![endif]-->
 		<script type="text/javascript"> 
 			$(document).ready(function() {
 				JS.require('JS.Observable', function() {
@@ -21,6 +25,8 @@
 					var remoteSender = function(key, data) {
 						socket.emit(key, data);
 					};		
+					var templateCache = { };
+					var modelCache =  { trivia : { }, triviaList : { } };
 					var locBroadcaster = new LocalBroadcaster();
 					socket.on('message', function(data){
 						console.log(data);
@@ -66,29 +72,124 @@
 					var initFragment = new InitFragment(locBroadcaster, remoteSender);
 					initFragment.setup();
 					initFragment.sendRemoteMessage('reRegister', { });
+				
+				
+					var HomeFragment = new JS.Class(Fragment, {
+						setupVisual : function() {
+							var curr = this;
+							var view = { 'trivias' : this.get('trivias') };
+							this.bindToTemplate('/assets/templates/trivia-list.html', templateCache, function(template) {
+								var content = Mustache.render(template, view);
+								$('#contentView').html(content);
+								curr.visualComplete();
+							});
+							
+						},						
 					
+						setupMessageEvents: function(){
+							var curr = this;
+							this.bindMessageEvent('myTrivias', function(trivias, isLocal){
+								curr.set('trivias', trivias);
+								modelCache.triviaList['home'] = trivias;
+								curr.setupVisual();
+								
+							});
+							
+							this.bindMessageEvent('registerComplete', function(data, isLocal){
+								curr.getTrivias();
+							});
+						},
+						
+						setupDOMEvents : function() {
+							var curr = this;
+							this.bindDOMEvent('.edit-trivia', 'click', function(e){
+								e.preventDefault();
+								var triviaId = $(this).attr('id');
+								var trivia = curr.get('trivias').select(function(x){
+									return x._id == triviaId;
+								})[0];
+								view.displayTriviaEdit(trivia);
+								curr.close();
+							});	
+							
+							this.bindDOMEvent('.delete-trivia', 'click', function(e){
+								e.preventDefault();
+								if(confirm("Are you sure you would like to delete this trivia?")){
+									var id = $(this).attr('id');
+									
+									curr.deleteTrivia(id);
+								}
+							});														
+						},
+						
+						getTrivias : function(){
+							if(modelCache.triviaList['home'] === undefined){
+								this.sendRemoteMessage('getMyTrivias', {  });
+							}
+							else{
+								this.sendLocalMessage('myTrivias', modelCache.triviaList['home']);
+							}
+						},
+						
+						deleteTrivia : function(triviaId){
+							var rs = this.get('trivias').select(function(x){
+								return x._id != triviaId;
+							});
+							this.set('trivias', rs);
+							this.bindTrivia();
+							this.sendRemoteMessage('removeTrivia', { triviaId : triviaId });
+						},
+						
+						bindTrivia: function(initLoad){
+							var curr = this;
+							var view = { 'trivias' : this.get('trivias') };
+							this.bindToTemplate('/assets/templates/trivia-list.html', templateCache, function(template) {
+								var content = Mustache.render(template, view);
+								$('#contentView').html(content);
+								if(!(initLoad === undefined) && initLoad == true) {
+									curr.visualComplete();
+								}
+							});							
+						}
+					});
+				
 					var EditFragment = new JS.Class(Fragment, {
 						setupVisual : function(){
+							var curr = this;
 							$('title').html(this.get('trivia').triviaName);
-							this.visualComplete();
+							this.bindToTemplate('/assets/templates/trivia-edit.html', templateCache, function(template){
+								var content = Mustache.render(template, curr.get('trivia'));
+								$('#contentView').html(content);
+								curr.visualComplete();			
+							});
+							
 						},
 						
 						setupMessageEvents : function(){
 							
 							var curr = this;
 							this.bindMessageEvent('myTrivia', function(trivia, isLocal) {
-								curr.set('trivia', trivia);
-								
-								curr.setupVisual();
+								if(trivia._id == curr.get('triviaId')){
+									
+									curr.set('trivia', trivia);
+									curr.setupVisual();
+								}
 							});
 							
 							this.bindMessageEvent('registerComplete', function(data, isLocal){
 								curr.getTrivia();
 							});
+							
+							
 						},
 						
 						getTrivia : function(){
-							this.sendRemoteMessage('getMyTriviaByTriviaId', { triviaId : this.get('triviaId') });
+							if(modelCache.trivia[this.getTriviaId] === undefined){
+								this.sendRemoteMessage('getMyTriviaByTriviaId', { triviaId : this.get('triviaId') });
+							}
+							else{
+								this.sendLocalMessage('myTrivia', modelCache.trivia[this.getTriviaId]);
+							}
 						}
 						
 					});
@@ -97,7 +198,7 @@
 						
 						setupVisual : function(){
 							var curr = this;
-							$.get('/assets/templates/trivia.html',function(resp) {
+							$.get('/assets/templates/trivia.mustache.html',function(resp) {
 								var content = Mustache.render(resp,{'action' : 'add'});
 								$('#contentView').html(content);
 								curr.visualComplete();
@@ -134,14 +235,18 @@
 				  		},
 	
 				  		home: function() {
+				  			var homeFragment = new HomeFragment(locBroadcaster, remoteSender);
+				  			homeFragment.setupMessageEvents();
+			  				if(initFragment.get('isAuth')) { 
+			      				homeFragment.getTrivias();
+			      			}
 				  		},
 				  		
 				  		
 				  		createTrivia: function() {
 				  			var createFragment = new CreateFragment(locBroadcaster, remoteSender);
 				  			createFragment.setup();
-							$('title').html('Create Trivia');
-
+							$('title').html('Create Trivia');						
 				  		},
 	
 				  		editTrivia: function(triviaId) {
@@ -154,6 +259,7 @@
 			      		},
 	
 				  		updateTrivia: function(triviaId) {
+				  			
 				  		}
 	
 					});	
@@ -169,15 +275,21 @@
 						  this.router.navigate("home", true);
 					  },
 					  
-					  displayTriviaEdit: function(id){
-						  this.router.navigate("trivia/" + id + "/edit/", true);
+					  displayTriviaEdit: function(triviaOrTriviaId){
+					  	var id;
+					  	if(typeof(triviaOrTriviaId) != String){
+					  		modelCache.trivia[this._id] = triviaOrTriviaId;
+					  		var id = triviaOrTriviaId._id;
+					  	}
+					  	else{
+					  		id = triviaOrTriviaId
+					  	}
+					  	this.router.navigate("trivia/" + id + "/edit/", true);
 					  }			  
 					
 					});
 					
 					var view = new ApplicationView();
-				
-
 
 				});
 			});

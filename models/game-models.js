@@ -5,11 +5,13 @@ function makeModels(Schema, mongoose) {
 	Trivia = new Schema({
 		triviaName : String,
 		sessionId : String,
+		createdAt : Number,
 		questions : [
-			{question : String, answers : [{ answerType : String, answer : String}], choices : [{ answerType : String, answer : String}]}
+			{ createdAt : Number, question : String, answers : [{ answerType : String, answer : String}], choices : [{ answerType : String, answer : String}]}
 		]
     });	
 	Trivia.methods.addQuestion = function(question, answers, choices, isText, callback){
+		var ts = Math.round((new Date()).getTime() / 1000);
 		answerType = isText || isText ? 'text' : 'photo';
 		var a = [];
 		for(var i = 0; i < answers.length; i++){
@@ -20,9 +22,14 @@ function makeModels(Schema, mongoose) {
 		for(var i = 0; i < choices.length; i++){
 			c.push({ answerType : answerType, answer : choices[i] });
 		}		
-		this.questions.push({ question : question, answers : a, choices : c });
+		this.questions.push({ question : question, answers : a, choices : c, createdAt : ts });
 		this.save(callback);
 	};
+	
+	
+	Trivia.statics.findByTriviaIdSessionId = function(triviaId, sessionId, callback) {
+		this.findOne({ _id :  mongoose.Types.ObjectId(triviaId), sessionId : sessionId }).exec(callback);
+	};	
 	
 	
 	

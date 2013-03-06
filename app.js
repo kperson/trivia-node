@@ -35,16 +35,30 @@ io.sockets.on('connection',function(socket) {
 
 	socket.on('createTrivia', function(data){
 		var name = data.triviaName;
-		var trivia = new Trivia({triviaName : name, sessionId : socket.findSessionId() });
+		var trivia = new Trivia({triviaName : name, sessionId : socket.findSessionId(), createdAt :  Math.round((new Date()).getTime() / 1000) });
 		trivia.save(function(err, doc) {
 			socket.sendMessage('triviaCreated', { triviaId : doc.id });
 		});
 	});
 	
 	socket.on('getMyTriviaByTriviaId', function(data) {
-		Trivia.findOne({ _id :  mongoose.Types.ObjectId(data.triviaId), sessionId : clientInfoReverse[socket.id] }).exec(function(err, trivia){
-			socket.sendMessage('myTrivia', trivia);
+		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){
+			socket.sendMessage('myTrivia', trivia);			
 		});
+	});
+	
+	socket.on('getMyTrivias', function(data){
+		Trivia.find({ sessionId : socket.findSessionId() }).sort('-createdAt').exec(function(err, trivias){
+			socket.sendMessage('myTrivias', trivias);
+		});
+	});
+	
+	socket.on('removeTrivia', function(data){
+		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){
+			trivia.remove(function(err, trivia){
+				socket.sendMessage('triviaRemoved', data);
+			});	
+		});	
 	});
 	
 });

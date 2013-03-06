@@ -32,6 +32,10 @@ function socketSend(key, value, sessionId, sendIn) {
 						}
 						catch(err){
 							doc.status = 'unsent';
+							var ts = Math.round((new Date()).getTime() / 1000);
+							doc.sendAt = ts;
+							doc.timeout = this.sendAt + 30;
+							doc.messageExpiration = this.sendAt + (60 * 4);
 							doc.save();
 							console.log(err);
 						}
@@ -78,6 +82,10 @@ function messageCheck(time) {
 							}
 							catch(err){
 								msg.status = 'unsent';
+								var ts = Math.round((new Date()).getTime() / 1000);
+								msg.sendAt = ts;
+								msg.timeout = this.sendAt + 30;
+								msg.messageExpiration = this.sendAt + (60 * 4);
 								msg.save();
 								console.log(err2);
 							}
