@@ -1,16 +1,49 @@
-<table>
-	{{#trivias}}
-	<tr>
-		<td>
-			{{triviaName}}
-		</td>
-		<td>
-			<a id="{{_id}}" class="edit-trivia" href="#">Edit</a>
-		</td>	
-		<td>
-			<a id="{{_id}}" class="delete-trivia" href="#">Delete</a>
-		</td>	
-	</tr>
-	{{/trivias}}
-	
-</table>
+
+
+
+<div class="row">
+	<div class="large-6 large-offset-3">
+		<div class="row collapse">
+			<div class="large-4 columns">
+				<h3 id="title">Your Games</h3>
+			</div>
+			<div id="create-form">
+				<div class="large-4 large-offset-3 columns">
+					<input type="text" id="trivia-name" name='trivia-name' placeholder="Create your own Trivia!">
+				</div>
+				<div class="large-1 columns">
+					<a href="#" id="create-trivia-btn" class="button prefix">Go!</a>
+				</div>	
+			</div>				
+			
+		</div>
+		<div class="row">
+			<div class="large-12">
+				<div class="panel">
+					<table width="100%" id="trivia-list">
+						<tr>
+							<td>Trivia Name</td>
+							<td>Edit</td>
+							<td>Delete</td>
+						</tr>				
+						{{#trivias}}
+						<tr>
+							<td>
+								{{triviaName}}
+							</td>
+							<td>
+								<a id="{{_id}}" class="edit-trivia" href="#">Edit</a>
+							</td>	
+							<td>
+								<a id="{{_id}}" class="delete-trivia" href="#">Delete</a>
+							</td>	
+						</tr>
+						{{/trivias}}
+						
+					</table>				
+						
+				</div>
+			</div>	
+		</div>
+	</div>
+</div>

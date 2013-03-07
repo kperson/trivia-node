@@ -37,7 +37,7 @@ io.sockets.on('connection',function(socket) {
 		var name = data.triviaName;
 		var trivia = new Trivia({triviaName : name, sessionId : socket.findSessionId(), createdAt :  Math.round((new Date()).getTime() / 1000) });
 		trivia.save(function(err, doc) {
-			socket.sendMessage('triviaCreated', { triviaId : doc.id });
+			socket.sendMessage('triviaCreated', doc );
 		});
 	});
 	

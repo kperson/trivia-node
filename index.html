@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width" />
 	<title></title>
 	<head>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
@@ -13,6 +14,13 @@
 		<script type="text/javascript" src="/assets/js/jsclass-min/loader-browser.js"></script>
 		<script src="/assets/js/jquery.cookie.js"></script>
 		<script src="/assets/js/fragment.js"></script>
+		<link rel="stylesheet" href="/assets/zurb/css/normalize.css" />
+  		<link rel="stylesheet" href="/assets/zurb/css/foundation.css" />
+  		<script src="/assets/zurb/js/vendor/custom.modernizr.js"></script>
+
+		<link rel="stylesheet" type="text/css" media="all" href="/assets/css/main.css" />
+		
+
 		<!--[if lt IE 9]>
       	<script src="/assets/js/html5.js"></script>
     	<![endif]-->
@@ -98,6 +106,14 @@
 							this.bindMessageEvent('registerComplete', function(data, isLocal){
 								curr.getTrivias();
 							});
+							
+							this.bindMessageEvent('triviaCreated', function(data, isLocal) {
+								var rs = [data].concat(curr.get('trivias'));
+								curr.set('trivias', rs); 
+								modelCache.triviaList['home'] = rs;
+								view.displayTriviaEdit(data._id);
+								curr.close();
+							});							
 						},
 						
 						setupDOMEvents : function() {
@@ -119,7 +135,20 @@
 									
 									curr.deleteTrivia(id);
 								}
-							});														
+							});	
+							
+							this.bindDOMEvent('#create-trivia-btn', 'click', function(e){
+								e.preventDefault();
+								var triviaName = $.trim($('#trivia-name').val());
+								if(triviaName != ''){
+									var data = { triviaName : triviaName };	
+									curr.sendRemoteMessage('createTrivia', data);	
+								}
+								else{
+									alert('Please insert a name');
+								}
+						
+							});													
 						},
 						
 						getTrivias : function(){
@@ -136,6 +165,7 @@
 								return x._id != triviaId;
 							});
 							this.set('trivias', rs);
+							modelCache.triviaList['home'] = rs;
 							this.bindTrivia();
 							this.sendRemoteMessage('removeTrivia', { triviaId : triviaId });
 						},
@@ -157,6 +187,7 @@
 						setupVisual : function(){
 							var curr = this;
 							$('title').html(this.get('trivia').triviaName);
+							$('#title').html(this.get('trivia').triviaName);
 							this.bindToTemplate('/assets/templates/trivia-edit.html', templateCache, function(template){
 								var content = Mustache.render(template, curr.get('trivia'));
 								$('#contentView').html(content);
@@ -194,39 +225,6 @@
 						
 					});
 									
-					var CreateFragment = new JS.Class(Fragment, {
-						
-						setupVisual : function(){
-							var curr = this;
-							$.get('/assets/templates/trivia.mustache.html',function(resp) {
-								var content = Mustache.render(resp,{'action' : 'add'});
-								$('#contentView').html(content);
-								curr.visualComplete();
-							});
-						},
-						
-						setupMessageEvents : function(){
-							this.bindMessageEvent('triviaCreated', function(data, isLocal) {
-								view.displayTriviaEdit(data.triviaId);
-							});
-						},
-						
-						setupDOMEvents : function() {
-							var curr = this;
-							this.bindDOMEvent('#trivia-game', 'submit', function(e){
-								e.preventDefault();
-								var form = {};
-								form.triviaName = $('input[name="triviaName"]',this).val();	
-								curr.sendRemoteMessage('createTrivia', form);
-							});							
-						},
-						
-						setupComplete: function() {
-						}
-						
-					});
-	
-
 					var ApplicationRouter = Backbone.Router.extend({
 				  		routes: {
 				  			'': 'home',
@@ -235,6 +233,8 @@
 				  		},
 	
 				  		home: function() {
+				  			$('title').html('My Trivia');	
+				  			$('#title').html('My Trivia');					
 				  			var homeFragment = new HomeFragment(locBroadcaster, remoteSender);
 				  			homeFragment.setupMessageEvents();
 			  				if(initFragment.get('isAuth')) { 
@@ -277,9 +277,9 @@
 					  
 					  displayTriviaEdit: function(triviaOrTriviaId){
 					  	var id;
-					  	if(typeof(triviaOrTriviaId) != String){
+					  	if(typeof(triviaOrTriviaId) != 'string'){
 					  		modelCache.trivia[this._id] = triviaOrTriviaId;
-					  		var id = triviaOrTriviaId._id;
+					  		id = triviaOrTriviaId._id;
 					  	}
 					  	else{
 					  		id = triviaOrTriviaId
@@ -296,7 +296,7 @@
 		</script>
 	</head>
 	<body>
-		<div id="contentView">	
-		</div>	
+		<div id="contentView"></div>	
 	</body>
+
 </html>
