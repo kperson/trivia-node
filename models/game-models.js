@@ -10,7 +10,7 @@ function makeModels(Schema, mongoose) {
 			{ createdAt : Number, question : String, answers : [{ answerType : String, answer : String}], choices : [{ answerType : String, answer : String}]}
 		]
     });	
-	Trivia.methods.addQuestion = function(question, answers, choices, isText, callback){
+	Trivia.methods.addQuestion = function(question, answers, choices, isText, index){
 		var ts = Math.round((new Date()).getTime() / 1000);
 		answerType = isText || isText ? 'text' : 'photo';
 		var a = [];
@@ -22,9 +22,21 @@ function makeModels(Schema, mongoose) {
 		for(var i = 0; i < choices.length; i++){
 			c.push({ answerType : answerType, answer : choices[i] });
 		}		
-		this.questions.push({ question : question, answers : a, choices : c, createdAt : ts });
-		this.save(callback);
+		if(index === undefined){
+			this.questions.push({ question : question, answers : a, choices : c, createdAt : ts });			
+		}
+		else{
+			this.questions[index] = { question : question, answers : a, choices : c, createdAt : ts }; 
+		}
 	};
+	
+	Trivia.methods.fillNull = function(questionIndex, upTo){
+		for(var i = 0; i < upTo; i++){
+			if(this.questions[questionIndex].choices[i] === undefined){
+				this.questions[questionIndex].choices[i] = null;
+			}
+		}
+	};	
 	
 	
 	Trivia.statics.findByTriviaIdSessionId = function(triviaId, sessionId, callback) {

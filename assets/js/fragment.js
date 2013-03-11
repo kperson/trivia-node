@@ -62,6 +62,35 @@ JS.require('JS.Observable', function() {
 			}
 		},
 		
+		bindToTemplates: function(urls, cache, callback){
+			var ct = 0;
+			var templates = [];
+			var checkResponse = function(){
+				ct++;
+				if(ct == urls.length){
+					callback(templates);
+				}
+			}
+			
+			var f = function(url, index) {
+				if(cache[url] === undefined){
+					$.get(url, function(resp) {
+						cache[url] = resp;
+						templates[index] = resp;
+						checkResponse();
+					});						
+				}
+				else{
+					templates[index] = cache[url];
+					checkResponse();
+				}
+			};			
+			
+			for(var i = 0; i < urls.length; i++){
+				f(urls[i], i);
+			}
+		},		
+		
 		cleanUp : function() {
 		},
 		
@@ -137,4 +166,4 @@ JS.require('JS.Observable', function() {
 		}
 	});
 	
-});
+}); 

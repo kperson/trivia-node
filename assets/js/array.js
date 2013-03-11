@@ -24,3 +24,13 @@ Array.prototype.remove = function(filter)
 		return !filter(row);
 	});
 }
+
+Array.prototype.indexOfSelect = function(filter)
+{
+	for (var i = 0; i< this.length; i++) {
+		if(filter(this[i])){
+			return i;
+		}
+    }
+	return -1;
+}

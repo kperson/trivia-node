@@ -33,3 +33,42 @@
 	position:relative;
 	top:10px;
 }
+
+
+
+.boxy{
+	height:150px;
+}
+
+.question-edit{
+	height:110px;
+	resize:none;
+}
+
+#question-list {
+	list-style: none;
+	margin:0 0 0 0;
+	padding:0 0 0 0;
+	float:left;
+	
+}
+
+#question-list li {
+	display:inline;
+	margin:0;
+	padding:0;
+}
+
+#new-question{
+	float:left;
+	margin:4px 15px 0 0;
+	padding:0;
+}
+
+#question-list-cont{
+	float:right;
+}
+
+#delete{
+	display:none;
+}

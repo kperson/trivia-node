@@ -53,6 +53,38 @@ io.sockets.on('connection',function(socket) {
 		});
 	});
 	
+	socket.on('updateTrivia', function(data){
+		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){
+			var choices = [];
+			var answers = [];
+			for(var key in data.update.items){
+				var item = data.update.items[key];
+				if(item.isCorrect){
+					answers.push(item.value);
+				}
+				choices[parseInt(key)] = item.value;
+			}
+
+			trivia.addQuestion(data.update.question, answers, choices, true, data.update.questionIndex);
+			trivia.fillNull(data.questionIndex, null);
+			
+			
+			Trivia.update( { _id : trivia._id }, { '$set' : { questions :  trivia.questions } }).exec(function(err, savedTrivia) {
+				socket.sendMessage('triviaUpdated', trivia);	
+				socket.sendMessage('questionModified', trivia);	
+			});
+		});		
+	});
+	
+	socket.on('removeQuestion', function(data){
+		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){
+			trivia.questions.splice(data.questionIndex, 1);
+			trivia.save(function(err, doc){
+				socket.sendMessage('triviaUpdated', trivia);								
+			});
+		});
+	});
+	
 	socket.on('removeTrivia', function(data){
 		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){
 			trivia.remove(function(err, trivia){

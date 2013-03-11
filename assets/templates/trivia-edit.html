@@ -1,10 +1,30 @@
-{{triviaName}}
-<div id="light" class="white_content">
-	<form method="post" action="#">
-		<input type	="text" name="question" />
-		<input type="submit" name="submit" value="Add" />
-	</form>	
+<div class="row">
+	<div class="large-8 large-offset-2">
+		<div class="row collapse">
+			<div class="large-4 columns">
+				<h3 id="title">{{triviaName}}</h3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12">
+				<div id="questionArea"></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-4 columns">
+				<a href="#" id="save" class="small button">Save</a>
+				<a href="#" id="delete" class="small button alert">Delete</a>
+			</div>
+			<div class="large-8 columns">
+				<div id="question-list-cont">
+					<a id="new-question" href="#">New Question</a>
+					<ul id="question-list">
+					{{#each questions}}
+						<li><a class="question-page" href="#" id="{{@index}}">{{math @index 1}}</a></li>
+					{{/each}}
+					</ul>
+				</div>
+			</div>			
+		</div>		
+	</div>
 </div>
- <div id="fade" class="black_overlay"></div>
-<a href = "javascript:void(0)" onclick = "document.getElementById('light').style.display='block';document.getElementById('fade').style.display='block'">Click me</a>
-
