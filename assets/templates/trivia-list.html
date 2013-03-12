@@ -24,6 +24,7 @@
 							<td># of Questions</td>
 							<td>Edit</td>
 							<td>Delete</td>
+							<td>Play Game</td>
 						</tr>				
 						{{#trivias}}
 						<tr>
@@ -38,6 +39,9 @@
 							</td>	
 							<td>
 								<a id="{{_id}}" class="delete-trivia" href="#">Delete</a>
+							</td>	
+							<td>
+								<a data-trivia-id="{{_id}}" class="play-trivia" href="#">Play</a>
 							</td>	
 						</tr>
 						{{/trivias}}
