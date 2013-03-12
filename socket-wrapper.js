@@ -1,5 +1,5 @@
 function socketSend(key, value, sessionId, sendIn) {
-	var sendTime = sendIn == undefined  ? 0 : sendIn;
+	var sendTime = sendIn === undefined  ? 0 : sendIn;
 	if(sessionId === undefined){
 		if (clientInfoReverse[this.id] === undefined){
 			sessionId = null;
@@ -54,20 +54,18 @@ function findSessionId(){
 }
 
 function disconnect() {
-	this.on('disconnect', function () {
-		console.log('Disconnecting');
-		var foundSessionId = this.findSessionId();
-		if(foundSessionId != undefined){
-			delete clientInfo[foundSessionId];
-			delete clientInfoReverse[this.id];
-			for(var i = 0; i < sessionIdList.length; i++){
-				if(sessionIdList[i] == foundSessionId){
-					sessionIdList.splice(i, 1);
-					break;
-				}
-			}			
-		}
-	});
+	console.log('Disconnecting');
+	var foundSessionId = this.findSessionId();
+	if(foundSessionId !== undefined){
+		delete clientInfo[foundSessionId];
+		delete clientInfoReverse[this.id];
+		for(var i = 0; i < sessionIdList.length; i++){
+			if(sessionIdList[i] == foundSessionId){
+				sessionIdList.splice(i, 1);
+				break;
+			}
+		}			
+	}
 }
 
 function messageCheck(time) {
@@ -75,7 +73,7 @@ function messageCheck(time) {
 		Message.dequeue(sessionIdList, function(err, msgs){
 			if(!err){
 				msgs.forEach(function(msg){
-					if(clientInfo[msg.sessionId] != undefined){
+					if(clientInfo[msg.sessionId] !== undefined){
 						msg.markAsSent(function(err2, doc){
 							try {
 								io.sockets.sockets[clientInfo[msg.sessionId].socketId].emit('message', msg.normalize());
