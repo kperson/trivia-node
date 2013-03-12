@@ -40,6 +40,13 @@ io.sockets.on('connection',function(socket) {
 			socket.sendMessage('triviaCreated', doc );
 		});
 	});
+
+	socket.on('playerJoined', function(data){
+		var triviaId = data.triviaId;
+		Trivia.findByTriviaId(triviaId, function(err, trivia) {
+			socket.sendMessage('guestJoinedTrivia',trivia,trivia.sessionId);
+		});
+	});
 	
 	socket.on('getMyTriviaByTriviaId', function(data) {
 		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){

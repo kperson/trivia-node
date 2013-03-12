@@ -42,6 +42,10 @@ function makeModels(Schema, mongoose) {
 	Trivia.statics.findByTriviaIdSessionId = function(triviaId, sessionId, callback) {
 		this.findOne({ _id :  mongoose.Types.ObjectId(triviaId), sessionId : sessionId }).exec(callback);
 	};	
+
+	Trivia.statics.findByTriviaId = function(triviaId, callback) {
+		this.findOne({ _id :  mongoose.Types.ObjectId(triviaId) }).exec(callback);
+	};	
 	
 	
 	

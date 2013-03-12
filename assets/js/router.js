@@ -33,7 +33,10 @@ var ApplicationRouter = Backbone.Router.extend({
 		},
 
 		playTrivia: function(triviaId) {
-			// console.log(triviaId);
+			playFragment = new PlayFragment(locBroadcaster,remoteSender);
+			playFragment.set('triviaId',triviaId);
+			playFragment.sendRemoteMessage('playerJoined', {triviaId : triviaId});
+			playFragment.setup();
 		},
 
 		updateTrivia: function(triviaId) {
