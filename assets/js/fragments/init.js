@@ -1,4 +1,4 @@
-JS.require('JS.Observable', function() {		
+
 	InitFragment = new JS.Class(Fragment, {
 			
 			initialize : function(){
@@ -43,4 +43,4 @@ JS.require('JS.Observable', function() {
 				}
 			
 		});
-});
+

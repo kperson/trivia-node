@@ -1,4 +1,5 @@
 var fs = require('fs');
+var indexFile;
 
 function handler (req, res) {
 	var lastChar = req.url.substring(req.url.length - 1, req.url.length);
@@ -8,15 +9,26 @@ function handler (req, res) {
 	var ext = data[data.length - 1].toLowerCase(); 
 	var contentType = extMap[ext] == undefined ? extMap['html'] : extMap[ext];
   
-	fs.readFile(__dirname + fileToRead, function (err, data) {
-		if (err) {
-			res.writeHead(500);
-			return res.end('Error loading ' + fileToRead);
-		}
-		res.setHeader('X-UA-Compatible', 'IE=edge');
+	res.setHeader('X-UA-Compatible', 'IE=edge');
+	if(fileToRead == '/index.html' && indexFile !== undefined){
 		res.writeHead(200, {'Content-Type': contentType });
-		res.end(data);
-  });
+		res.end(indexFile);
+	}
+	else{
+		fs.readFile(__dirname + fileToRead, function (err, data) {
+			if (err) {
+				res.writeHead(500);
+				return res.end('Error loading ' + fileToRead);
+			}
+			
+			res.writeHead(200, {'Content-Type': contentType });
+			res.end(data);
+			if(fileToRead =='/index.html'){
+				indexFile = data;
+				console.log('caching');
+			}
+	  });
+	}
 }
 
 module.exports.handler = handler;

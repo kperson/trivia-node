@@ -52,9 +52,8 @@ JS.require('JS.Observable', function() {
 		bindToTemplate: function(url, cache, callback){
 			if(cache[url] === undefined){
 				$.get(url, function(resp) {
-					//resp = resp.replace(/(\r\n|\n|\r)/gm,"");
-					cache[url] = resp;
-					callback(resp)
+					cache[url] = Handlebars.compile(resp);
+					callback(cache[url])
 				});				
 			}
 			else{
@@ -75,8 +74,8 @@ JS.require('JS.Observable', function() {
 			var f = function(url, index) {
 				if(cache[url] === undefined){
 					$.get(url, function(resp) {
-						cache[url] = resp;
-						templates[index] = resp;
+						cache[url] = Handlebars.compile(resp);
+						templates[index] = cache[url];
 						checkResponse();
 					});						
 				}

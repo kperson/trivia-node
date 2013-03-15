@@ -11,6 +11,7 @@ var TriviaSession = models['trivia_session'];
 var Session = models['session'];
 var User = models['user'];
 
+
 clientInfo = { };
 sessionIdList =  [];
 clientInfoReverse = { };

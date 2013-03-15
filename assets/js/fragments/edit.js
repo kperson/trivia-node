@@ -1,4 +1,4 @@
-JS.require('JS.Observable', function() {		
+	
 	EditFragment = new JS.Class(Fragment, {
 			setupVisual : function(){
 				var curr = this;
@@ -6,10 +6,10 @@ JS.require('JS.Observable', function() {
 				$('#title').html(this.get('trivia').triviaName);
 				this.bindToTemplates(['/assets/templates/trivia-edit.html', '/assets/templates/question.html', '/assets/templates/edit-region.html'], templateCache, function(templates){
 					var trivia = curr.get('trivia');
-					var content = Handlebars.compile(templates[0])(trivia);
+					var content = templates[0](trivia);
 					$('#contentView').html(content);
-					$('#questionArea').html(templates[1]);
-					$('.question-box').html(templates[2]);
+					$('#questionArea').html(templates[1]({}));
+					$('.question-box').html(templates[2]({}));
 					curr.set('currQuestionIndex', trivia.questions.length);
 					
 
@@ -153,4 +153,4 @@ JS.require('JS.Observable', function() {
 			}
 			
 		});
-});
+
