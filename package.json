@@ -7,12 +7,13 @@
     "socket.io" : "0.9.x", 
     "mongoose" : "3.5.x",
 	"jake" : "0.5.x",
-	"jQuery" : "1.7.x",
-	"jsdom" : "0.5.x",
 	"xmlhttprequest" : "1.5.x",
 	"uglify-js" : "2.2.x",
 	"clean-css" : "0.10.x",
-	"xml2js" : "0.2.x"
+	"xml2js" : "0.2.x",
+	"jsdom" : "0.5.x",
+	"xmlbuilder" : "0.4.x",
+	"handlebars" : "1.0.x"
   },
   "engine": "node >= 0.8"
 }

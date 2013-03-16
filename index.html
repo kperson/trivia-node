@@ -4,12 +4,17 @@
 		<meta charset="utf-8" />
   		<meta name="viewport" content="width=device-width" />
 		<title></title>
+		
+		
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		
 		<script type="text/javascript">JSCLASS_PATH = '/assets/js/jsclass-min'</script>
 		
-		
+		{{#if cacheOn}}
+		<script type="text/javascript" src="/assets/js/compressed.js"></script>
+		<link rel="stylesheet" type="text/css" href="/assets/css/compressed.css" />
+		{{else}}
 		<script type="text/javascript" src="/assets/js/jsclass-min/loader-browser.js"></script>
 		<script type="text/javascript" src="/assets/js/jsclass-min/core.js"></script>
 		<script type="text/javascript" src="/assets/js/jsclass-min/observable.js"></script>
@@ -17,7 +22,6 @@
 		<script type="text/javascript" src="/assets/js/array.js"></script>
 		<script type="text/javascript" src="/assets/js/underscore-min.js"></script>
 		<script type="text/javascript" src="/assets/js/backbone-min.js"></script>
-		<script type="text/javascript" src="/assets/js/mustache.js"></script>
 		<script type="text/javascript" src="/assets/js/handlebars.js"></script>
 		<script type="text/javascript" src="/assets/js/handlebars-helpers.js"></script>
 		<script type="text/javascript" src="/assets/js/jquery.cookie.js"></script>
@@ -26,16 +30,9 @@
 		<script type="text/javascript" src="/assets/js/fragments/edit.js"></script>
 		<script type="text/javascript" src="/assets/js/fragments/play.js"></script>
 		<script type="text/javascript" src="/assets/js/router.js"></script>
-		<script type="text/javascript" src="/assets/js/vendor/custom.modernizr.js"></script>
-		
-		<link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
-		<link rel="stylesheet" type="text/css" href="/assets/css/foundation.css" />	
-		<link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
-		
+		<script type="text/javascript" src="/assets/js/vendor/custom.modernizr.js"></script>			
 		<script type="text/javascript"> 
 			$(document).ready(function() {
-				
-					
 					utility = new Utility();
 					var socket = io.connect('http://localhost:8080');
 					//var socket = io.connect('http://4d5i.localtunnel.com:80')
@@ -61,10 +58,13 @@
 				
 			});
 		</script>
+		<link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="/assets/css/foundation.css" />	
+		<link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+		{{/if}}
+		
 	</head>
 	<body>
-		<div id="contentView">
-			
-		</div>	
+		<div id="contentView"></div>
 	</body>
 </html>

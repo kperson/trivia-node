@@ -1,4 +1,4 @@
-
+JS.require('JS.Observable', function() {
 		HomeFragment = new JS.Class(Fragment, {
 			setupVisual : function() {
 				var curr = this;
@@ -105,4 +105,4 @@
 				});             
 			}
 		});
-
+});

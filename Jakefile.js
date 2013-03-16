@@ -2,10 +2,8 @@ var sys = require('sys');
 var fs = require('fs');
 var UglifyJS = require("uglify-js");
 var cleanCSS = require('clean-css');
-var $ = require('jquery');
-var jsdom = require("jsdom");
 var parseString = require('xml2js').parseString;
-
+var Handlebars = require('handlebars');
 
 namespace('build', function () {
 	desc('This is the bar task');
@@ -30,13 +28,15 @@ namespace('build', function () {
 			fs.unlinkSync(lastScript);
 		}		
 		
-		
-		
-		var index = fs.readFileSync('index.html', 'utf-8');
-		my_scripts = [];
+		var indexTemplate = Handlebars.compile(fs.readFileSync('index.html', 'utf-8'));
+		var index = indexTemplate({ cacheOn : false });
+		var my_scripts = [];
+		var css_links = [];
 		parseString(index, function (err, result) {
-			//console.log(err);
+			var body = result.html.body[0];
 			var scripts = result.html.head[0].script;
+			var links = result.html.head[0].link;
+			
 			for(var i = 0; i < scripts.length; i++){
 				
 				var script = scripts[i]['$'];
@@ -52,14 +52,19 @@ namespace('build', function () {
 							my_scripts.push(file);
 						}
 					}
-				} 
-				 
+				} 	 
+			}
+
+			for(var c = 0; c < links.length; c++){
+				var link = links[c]['$'];
+				if(link !== undefined && ('href' in link)){
+					var file = link.href.substring(1, link.href.length);
+					css_links.push(file);
+				}
 			}
 
 		});
-		
-		//console.log(my_scripts);
-		
+				
 		
 		var templateJs = 'templateCache = {};';
 		var files = fs.readdirSync('assets/templates');
@@ -77,19 +82,20 @@ namespace('build', function () {
 		}
 		
 		fs.writeFileSync(templates, templateJs);
+		
 		my_scripts.push(templates);
 		my_scripts.push(lastScript);
-	
-	
+			
 		var rs = UglifyJS.minify(my_scripts);
+		
 		fs.writeFileSync(compressedJs, rs.code);
 	
 		
-		
-		var s1 = fs.readFileSync('assets/css/normalize.css', 'utf-8');
-		var s2 = fs.readFileSync('assets/css/foundation.css', 'utf-8');
-		var s3 = fs.readFileSync('assets/css/main.css', 'utf-8');
-		var minifiedCSS = cleanCSS.process(s1 + s2 + s3);
+		var cssGroup = '';
+		for(var z = 0; z < css_links.length; z++){
+			cssGroup += fs.readFileSync(css_links[z], 'utf-8');
+		}
+		var minifiedCSS = cleanCSS.process(cssGroup);
 		fs.writeFileSync(compressedCss, minifiedCSS);
 		
 

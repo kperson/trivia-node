@@ -1,5 +1,4 @@
-var config = require('./config.json');
-
+config = require('./config.json');
 var mongoose = require('mongoose');
 var schema = mongoose.Schema;
 mongoose.connect(config.mongoConnection);
@@ -10,7 +9,6 @@ var Trivia = models['trivia'];
 var TriviaSession = models['trivia_session'];
 var Session = models['session'];
 var User = models['user'];
-
 
 clientInfo = { };
 sessionIdList =  [];

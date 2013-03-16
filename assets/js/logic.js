@@ -1,7 +1,5 @@
  
 			$(document).ready(function() {
-				
-					
 					utility = new Utility();
 					var socket = io.connect('http://localhost:8080');
 					//var socket = io.connect('http://4d5i.localtunnel.com:80')

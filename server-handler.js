@@ -1,5 +1,8 @@
 var fs = require('fs');
 var indexFile;
+var Handlebars = require('handlebars');
+var indexCompiled;
+
 
 function handler (req, res) {
 	var lastChar = req.url.substring(req.url.length - 1, req.url.length);
@@ -15,17 +18,22 @@ function handler (req, res) {
 		res.end(indexFile);
 	}
 	else{
-		fs.readFile(__dirname + fileToRead, function (err, data) {
+		fs.readFile(__dirname + fileToRead, 'utf-8', function (err, data) {
 			if (err) {
 				res.writeHead(500);
 				return res.end('Error loading ' + fileToRead);
 			}
 			
 			res.writeHead(200, {'Content-Type': contentType });
-			res.end(data);
 			if(fileToRead =='/index.html'){
-				indexFile = data;
-				console.log('caching');
+				if(!indexCompiled || !config.cacheOn){
+					indexCompiled = Handlebars.compile(data)
+				}
+				var rs = indexCompiled(config);
+				res.end(rs);
+			}
+			else{
+				res.end(data);				
 			}
 	  });
 	}

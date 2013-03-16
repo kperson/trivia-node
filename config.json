@@ -2,5 +2,6 @@
   "port": 8080,
   "messageCheckInterval" : 1000,
   "mongoConnection" : "mongodb://apple:computer@linus.mongohq.com:10035/trivia",
-  "allowedSockets" : []
+  "allowedSockets" : [],
+  "cacheOn" : false
 }

@@ -1,4 +1,4 @@
-
+JS.require('JS.Observable', function() {
     PlayFragment = new JS.Class(Fragment, {
 
 			setupVisual : function() {
@@ -22,4 +22,4 @@
 			},
 
 		});
-
+});
