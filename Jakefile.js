@@ -7,7 +7,7 @@ var Handlebars = require('handlebars');
 
 namespace('build', function () {
 	desc('This is the bar task');
-	task('bar', [], function () {
+	task('cache', [], function () {
 		
 		var templates = 'assets/js/templates.js';
 		var compressedJs = 'assets/js/compressed.js';
