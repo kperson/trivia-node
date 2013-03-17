@@ -15,7 +15,6 @@ JS.require('JS.Observable', function() {
 				var curr = this;
 				this.bindMessageEvent('myTrivias', function(trivias, isLocal){
 					curr.set('trivias', trivias);
-					modelCache.triviaList['home'] = trivias;
 					curr.setupVisual();
 					
 				});
@@ -24,12 +23,14 @@ JS.require('JS.Observable', function() {
 					curr.getTrivias();
 				});
 				
-				this.bindMessageEvent('triviaCreated', function(data, isLocal) {
-					var rs = [data].concat(curr.get('trivias'));
-					curr.set('trivias', rs); 
-					modelCache.triviaList['home'] = rs;
-					view.displayTriviaEdit(data._id);
+				this.bindMessageEvent('triviaSessionCreated', function(data, isLocal){
 					curr.close();
+					view.controlTrivia(data.shortCode);
+				});				
+				
+				this.bindMessageEvent('triviaCreated', function(data, isLocal) {
+					curr.close();
+					view.displayTriviaEdit(data._id);
 				});             
 			},
 			setupDOMEvents : function() {
@@ -56,8 +57,7 @@ JS.require('JS.Observable', function() {
 				this.bindDOMEvent('.play-trivia', 'click', function(e){
 					e.preventDefault();
 					var id = $(this).attr('data-trivia-id');
-					view.playTrivia(id);
-					// this.sendRemoteMessage('removeTrivia', { triviaId : triviaId });
+					curr.sendRemoteMessage('createdTriviaSession', { triviaId : id });
 				});
 				
 				this.bindDOMEvent('#create-trivia-btn', 'click', function(e){

@@ -1,6 +1,8 @@
 config = require('./config.json');
+require('./assets/js/array.js');
 var mongoose = require('mongoose');
 var schema = mongoose.Schema;
+var utility = require('./server-helper.js').utility();
 mongoose.connect(config.mongoConnection);
 
 var models = require('./models/game-models.js').makeModels(schema, mongoose);
@@ -40,12 +42,24 @@ io.sockets.on('connection',function(socket) {
 		});
 	});
 
-	socket.on('playerJoined', function(data){
-		var triviaId = data.triviaId;
-		Trivia.findByTriviaId(triviaId, function(err, trivia) {
-			socket.sendMessage('guestJoinedTrivia',trivia,trivia.sessionId);
+	socket.on('joinTrivia', function(data){
+		TriviaSession.findOne({ shortCode : data.shortCode }).populate('trivia').exec(function(err, session) {
+			socket.sendMessage('guestJoinedTrivia', session, session.trivia.sessionId);
 		});
 	});
+	
+	socket.on('createdTriviaSession', function(data){
+		var triviaId = data.triviaId;
+		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){
+			var shortCode = utility.randomString(5);
+			var session = new TriviaSession({ trivia : trivia._id, shortCode : shortCode });
+			session.save(function(err, doc){
+				TriviaSession.findOne({ _id : doc._id }).populate('trivia').exec(function(err, savedDoc){
+					socket.sendMessage('triviaSessionCreated', savedDoc);					
+				});
+			});
+		});
+	});	
 	
 	socket.on('getMyTriviaByTriviaId', function(data) {
 		Trivia.findByTriviaIdSessionId(data.triviaId, socket.findSessionId(), function(err, trivia){

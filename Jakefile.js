@@ -93,10 +93,10 @@ namespace('build', function () {
 		
 		var cssGroup = '';
 		for(var z = 0; z < css_links.length; z++){
-			cssGroup += fs.readFileSync(css_links[z], 'utf-8');
+			cssGroup += "\n" + fs.readFileSync(css_links[z], 'utf-8');
 		}
-		var minifiedCSS = cleanCSS.process(cssGroup);
-		fs.writeFileSync(compressedCss, minifiedCSS);
+		//var minifiedCSS = cleanCSS.process(cssGroup);
+		fs.writeFileSync(compressedCss, cssGroup);
 		
 
 	});

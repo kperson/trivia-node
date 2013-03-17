@@ -26,15 +26,10 @@
     overflow: auto;
 }
 
-#trivia-list{
-}
-
 #create-form{
 	position:relative;
 	top:10px;
 }
-
-
 
 .boxy{
 	height:150px;

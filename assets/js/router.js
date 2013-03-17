@@ -2,8 +2,10 @@ var ApplicationRouter = Backbone.Router.extend({
 		routes: {
 			'': 'home',
 			'trivia/:id/edit/': 'editTrivia',
-			'trivia/:id/play/': 'playTrivia',
 			'trivia/add': 'createTrivia',
+			'p/:shortCode' : 'playTrivia',
+			'c/:shortCode' : 'controlTrivia',
+			
 		},
 
 		home: function() {
@@ -28,20 +30,27 @@ var ApplicationRouter = Backbone.Router.extend({
 			editFragment.set('triviaId', triviaId);
 			editFragment.setupMessageEvents();
 			if(initFragment.get('isAuth')) { 
-					editFragment.getTrivia();
-				}
+				editFragment.getTrivia();
+			}
 		},
 
-		playTrivia: function(triviaId) {
+		playTrivia: function(shortCode) {
 			playFragment = new PlayFragment(locBroadcaster,remoteSender);
-			playFragment.set('triviaId',triviaId);
-			playFragment.sendRemoteMessage('playerJoined', {triviaId : triviaId});
-			playFragment.setup();
+			playFragment.set('shortCode', shortCode);
+			playFragment.setupMessageEvents();				
+			if(initFragment.get('isAuth')) { 
+				playFragment.joinGame();
+			}
 		},
-
-		updateTrivia: function(triviaId) {
-			
-		}
+		
+		controlTrivia: function(shortCode) {
+			controlFragment = new ControlFragment(locBroadcaster,remoteSender);
+			controlFragment.set('shortCode', shortCode);
+			controlFragment.setupMessageEvents();				
+			if(initFragment.get('isAuth')) { 
+				controlFragment.controlGame();
+			}
+		}		
 
 }); 
 
@@ -57,8 +66,12 @@ var ApplicationView = Backbone.View.extend({
 	},
 
 	playTrivia: function(id){
-		this.router.navigate("trivia/" + id + "/play/", true);
+		this.router.navigate("p/" + id, true);
 	},
+	
+	controlTrivia: function(id){
+		this.router.navigate("c/" + id, true);
+	},	
 	
 	displayTriviaEdit: function(triviaOrTriviaId){
 		var id;

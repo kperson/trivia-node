@@ -10,7 +10,9 @@
 		
 		{{#if cacheOn}}
 		<script type="text/javascript" src="/assets/js/compressed.js"></script>
+		<!--
 		<link rel="stylesheet" type="text/css" href="/assets/css/compressed.css" />
+		-->
 		{{else}}
 		<script type="text/javascript" src="/assets/js/jsclass-min/loader-browser.js"></script>
 		<script type="text/javascript" src="/assets/js/jsclass-min/core.js"></script>
@@ -26,6 +28,7 @@
 		<script type="text/javascript" src="/assets/js/fragments/home.js"></script>
 		<script type="text/javascript" src="/assets/js/fragments/edit.js"></script>
 		<script type="text/javascript" src="/assets/js/fragments/play.js"></script>
+		<script type="text/javascript" src="/assets/js/fragments/control.js"></script>	
 		<script type="text/javascript" src="/assets/js/router.js"></script>
 		<script type="text/javascript" src="/assets/js/vendor/custom.modernizr.js"></script>			
 		<script type="text/javascript"> 
@@ -55,11 +58,15 @@
 				
 			});
 		</script>
+		<!--
 		<link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
 		<link rel="stylesheet" type="text/css" href="/assets/css/foundation.css" />	
 		<link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+		-->
 		{{/if}}
-		
+		<link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="/assets/css/foundation.css" />	
+		<link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
 	</head>
 	<body>
 		<div id="contentView"></div>

@@ -62,7 +62,7 @@ function makeModels(Schema, mongoose) {
 		currentQuestionIndex : {  type : Number, default : 0 },
 		creatorSessionId : String,
 		stats : [
-			{ playerName : String, sessionId : String, correct : { type : Number, default : 0 }, incorrect : { type : Number, default : 0 }, answerRecord : [Boolean] }
+			{ playerName : String, joinStatus : { type : Number, default : 'joined' } sessionId : String, correct : { type : Number, default : 0 }, incorrect : { type : Number, default : 0 }, answerRecord : [Boolean] }
 		]
 	});
 	
@@ -75,6 +75,14 @@ function makeModels(Schema, mongoose) {
 		}
 		return false;
 	};
+	
+	
+	TriviaSession.methods.sessionStatus = function(sessionId){
+		return this.stats.selectOne(function(stat){
+			return stat.sessionId == sessionId
+		});
+	};		
+	
 	
 	TriviaSession.methods.startTrivia = function(callback){
 		this.model('trivia_trivia_session').update({ _id : this._id }, { $set : { 'status' : 'playing' } }).exec(callback);

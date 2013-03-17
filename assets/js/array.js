@@ -9,6 +9,16 @@ Array.prototype.select = function(filter)
 	return newArr;
 }
 
+Array.prototype.selectOne = function(filter)
+{
+	for (var i = 0; i< this.length; i++) {
+		if(filter(this[i])){
+			return newArr.push(this[i]);
+		}
+    }
+	return null;
+}
+
 Array.prototype.map = function(mapFunction)
 {
 	var newArr = []

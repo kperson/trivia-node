@@ -33,6 +33,16 @@ JS.require('JS.Observable', function() {
 				this.bindMessageEvent('registerComplete', function(data, isLocal){
 					curr.set('isAuth', true);
 				});
+				
+				this.bindMessageEvent('triviaCreated', function(data, isLocal){
+					var rs = [data].concat(modelCache.triviaList['home']);
+					modelCache.triviaList['home'] = rs;
+				});
+				
+				this.bindMessageEvent('myTrivias', function(trivias, isLocal){
+					modelCache.triviaList['home'] = trivias;
+				});				
+				
 			},
 			
 			setupVisual : function() {
