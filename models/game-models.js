@@ -62,7 +62,7 @@ function makeModels(Schema, mongoose) {
 		currentQuestionIndex : {  type : Number, default : 0 },
 		creatorSessionId : String,
 		stats : [
-			{ playerName : String, joinStatus : { type : Number, default : 'joined' } sessionId : String, correct : { type : Number, default : 0 }, incorrect : { type : Number, default : 0 }, answerRecord : [Boolean] }
+			{ playerName : String, sessionId : String, status : { type : String, default : 'joined' }, correct : { type : Number, default : 0 }, incorrect : { type : Number, default : 0 }, answerRecord : [Boolean] }
 		]
 	});
 	
@@ -77,7 +77,7 @@ function makeModels(Schema, mongoose) {
 	};
 	
 	
-	TriviaSession.methods.sessionStatus = function(sessionId){
+	TriviaSession.methods.statStatus = function(sessionId){
 		return this.stats.selectOne(function(stat){
 			return stat.sessionId == sessionId
 		});
@@ -116,19 +116,9 @@ function makeModels(Schema, mongoose) {
 	};	
 	
 	TriviaSession.methods.addNewPlayer = function(sessionId, playerName, callback){
-		var finder = this;
 		var Sess = models['session'];
-		var gameSession = new Sess({ sessionId : sessionId, triviaSessionId : this._id, userType : 'player' });
-		gameSession.save(function(err, doc){
-			if(err){
-				callback(err, doc);
-				return;
-			}
-			else{
-				var newStat = { playerName : playerName, sessionId : sessionId, answerRecord : [] };
-				finder.model('trivia_trivia_session').update({ _id : this._id }, { $push: { stats: newStat } }).exec(callback);
-			}
-		});
+		var newStat = { playerName : playerName, sessionId : sessionId, answerRecord : [] };
+		this.model('trivia_trivia_session').update({ _id : this._id }, { $push: { stats: newStat } }).exec(callback);
 	};	
 	
 	TriviaSession.methods.findStatsBySessionId = function(sessionId){

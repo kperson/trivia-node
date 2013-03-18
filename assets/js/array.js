@@ -9,17 +9,28 @@ Array.prototype.select = function(filter)
 	return newArr;
 }
 
+Array.prototype.count = function(filter)
+{
+	var ct = 0;
+	for (var i = 0; i< this.length; i++) {
+		if(filter(this[i])){
+			ct++;
+		}
+    }
+	return ct;
+}
+
 Array.prototype.selectOne = function(filter)
 {
 	for (var i = 0; i< this.length; i++) {
 		if(filter(this[i])){
-			return newArr.push(this[i]);
+			return this[i];
 		}
     }
 	return null;
 }
 
-Array.prototype.map = function(mapFunction)
+Array.prototype.yield = function(mapFunction)
 {
 	var newArr = []
 	for (var i = 0; i< this.length; i++) {
@@ -30,7 +41,7 @@ Array.prototype.map = function(mapFunction)
 
 Array.prototype.remove = function(filter)
 {
-	this.select(function(row){
+	return this.select(function(row){
 		return !filter(row);
 	});
 }

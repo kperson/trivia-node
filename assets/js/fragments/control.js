@@ -15,15 +15,31 @@ JS.require('JS.Observable', function() {
 			var curr = this;
 			
 			this.bindMessageEvent('guestJoinedTrivia', function(data) {
-				var num = curr.get('numPlayers') + 1;
-				curr.set('numPlayers',num);
-				$('#numberOfPlayers').html(num);
+				if(curr.get('shortCode') == data.shortCode){
+					curr.set('session', data);
+					$('#numberOfPlayers').html(curr.recountPlayers());
+				}
 			});
+			
+			this.bindMessageEvent('guestLeftTrivia', function(data) {
+				if(curr.get('shortCode') == data.shortCode){
+					curr.set('session', data);
+					$('#numberOfPlayers').html(curr.recountPlayers());
+				}
+			});			
+	
 			
 			this.bindMessageEvent('registerComplete', function(data, isLocal){
 				curr.controlGame();
 			});				
 			
+		},
+		
+		recountPlayers: function(){
+			var ct = this.get('session').stats.count(function(row){
+				return row.status == 'joined';
+			});
+			return this.set('numPlayers', ct);
 		},
 		
 		controlGame: function(){

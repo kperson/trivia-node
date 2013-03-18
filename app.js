@@ -1,5 +1,6 @@
 config = require('./config.json');
 require('./assets/js/array.js');
+
 var mongoose = require('mongoose');
 var schema = mongoose.Schema;
 var utility = require('./server-helper.js').utility();
@@ -44,7 +45,21 @@ io.sockets.on('connection',function(socket) {
 
 	socket.on('joinTrivia', function(data){
 		TriviaSession.findOne({ shortCode : data.shortCode }).populate('trivia').exec(function(err, session) {
-			socket.sendMessage('guestJoinedTrivia', session, session.trivia.sessionId);
+			var statStatus = session.statStatus(socket.findSessionId());
+			if(statStatus == null){
+				session.addNewPlayer(socket.findSessionId(), 'x', function(err, doc){
+					TriviaSession.findOne({ shortCode : data.shortCode }).populate('trivia').exec(function(err, session2) {
+						socket.sendMessage('guestJoinedTrivia',session2, session.trivia.sessionId);	
+					});
+				});
+			}
+			else{
+				TriviaSession.update({ _id : session._id, 'stats.sessionId' : socket.findSessionId() }, { $set: { 'stats.$.status': 'joined' }}).exec(function(err, doc2){
+					TriviaSession.findOne({ shortCode : data.shortCode }).populate('trivia').exec(function(err, session2) {
+						socket.sendMessage('guestJoinedTrivia', session2, session.trivia.sessionId);	
+					});
+				});				
+			}
 		});
 	});
 	
@@ -114,7 +129,16 @@ io.sockets.on('connection',function(socket) {
 	});
 	
 	socket.on('disconnect', function(){
-		socket.disconnect();
+		TriviaSession.find({ stats : { $elemMatch : { sessionId : socket.findSessionId() }}}).exec(function(err, sessions){
+			sessions.forEach(function(doc){
+				TriviaSession.update({ _id : doc._id, 'stats.sessionId' : socket.findSessionId() }, { $set: { 'stats.$.status': 'dropped' }}).exec(function(err, doc2){
+					TriviaSession.findOne({ _id : doc._id }).populate('trivia').exec(function(err2, doc3){
+						socket.sendMessage('guestLeftTrivia', doc3, doc3.trivia.sessionId);
+					});
+				});
+			});
+			socket.disconnect();			
+		});
 	});
 	
 });
