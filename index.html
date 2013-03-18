@@ -50,6 +50,10 @@
 						locBroadcaster.notifyObservers({ messageKey : data.messageKey, data : data.data, isLocal : false });
 					});
 					
+					socket.on('reconnect', function(data){
+						window.location.reload();
+					});
+					
 					initFragment = new InitFragment(locBroadcaster, remoteSender);
 					initFragment.setup();
 					initFragment.sendRemoteMessage('reRegister', { });
