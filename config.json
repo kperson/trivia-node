@@ -3,5 +3,6 @@
   "messageCheckInterval" : 1000,
   "mongoConnection" : "mongodb://apple:computer@linus.mongohq.com:10035/trivia",
   "allowedSockets" : [],
+  "socketUrl" : "http://localhost:8080",
   "cacheOn" : false
 }

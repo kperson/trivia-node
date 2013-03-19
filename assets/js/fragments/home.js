@@ -95,9 +95,9 @@ JS.require('JS.Observable', function() {
 			
 			bindTrivia: function(initLoad){
 				var curr = this;
-				var view = { 'trivias' : this.get('trivias') };
+				var triviaView = { 'trivias' : this.get('trivias') };
 				this.bindToTemplate('/assets/templates/trivia-list.html', templateCache, function(template) {
-					var content = Mustache.render(template, view);
+					var content = template(triviaView);
 					$('#contentView').html(content);
 					if(!(initLoad === undefined) && initLoad == true) {
 						curr.visualComplete();

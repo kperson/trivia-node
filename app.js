@@ -1,5 +1,8 @@
 config = require('./config.json');
 require('./assets/js/array.js');
+if(config.cacheOn){
+	require('./server-cache.js').makeCache();
+}
 
 var mongoose = require('mongoose');
 var schema = mongoose.Schema;
@@ -16,6 +19,7 @@ var User = models['user'];
 clientInfo = { };
 sessionIdList =  [];
 clientInfoReverse = { };
+
 
 var app = require('http').createServer(require('./server-handler.js').handler)
 io = require('socket.io').listen(app)

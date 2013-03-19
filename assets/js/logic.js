@@ -2,7 +2,6 @@
 			$(document).ready(function() {
 					utility = new Utility();
 					var socket = io.connect('http://localhost:8080');
-					//var socket = io.connect('http://4d5i.localtunnel.com:80')
 					remoteSender = function(key, data) {
 						socket.emit(key, data);
 					};		
@@ -15,6 +14,10 @@
 					socket.on('message', function(data){
 						console.log(data);
 						locBroadcaster.notifyObservers({ messageKey : data.messageKey, data : data.data, isLocal : false });
+					});
+					
+					socket.on('reconnect', function(data){
+						window.location.reload();
 					});
 					
 					initFragment = new InitFragment(locBroadcaster, remoteSender);
